@@ -30,7 +30,7 @@ public class Student {
     private String classname;
 
     @Column(unique = true)
-    private String Uniquecode;
+    private String uniquecode;
 
     @ManyToOne
     @JoinColumn(name= "school_id")

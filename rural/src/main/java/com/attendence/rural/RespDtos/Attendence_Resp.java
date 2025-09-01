@@ -1,14 +1,17 @@
 package com.attendence.rural.RespDtos;
 
+
 import java.time.LocalDate;
+
+import com.attendence.rural.Model.Status;
 
 public record Attendence_Resp(
      String studentName,
-    String rollNumber,
+    int rollNumber,
     String className,
     String schoolName,
     LocalDate date,
-    String status,
+     Status status,
     boolean syncStatus
 ) {
     

@@ -35,8 +35,5 @@ public class Attendence {
 
     private boolean syncStatus = false;
 
-    public enum Status {
-        Present, Absent
-    }
-    
+   
 }
