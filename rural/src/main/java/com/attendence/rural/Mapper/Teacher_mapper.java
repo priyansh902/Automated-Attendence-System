@@ -1,13 +1,12 @@
 package com.attendence.rural.Mapper;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.attendence.rural.DTos.Teacher_dto;
-import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Teacher;
 import com.attendence.rural.RespDtos.Teache_Resp;
 
-@Service
+@Component
 public class Teacher_mapper {
 
     public Teacher ttTeacher(Teacher_dto teacher_dto){
@@ -16,9 +15,9 @@ public class Teacher_mapper {
         teacher.setPassword(teacher.getPassword());
         teacher.setUsername(teacher_dto.username());
 
-        var school = new School();
-        school.setName(teacher_dto.schoolName());
-        teacher.setSchool(school);
+        // var school = new School();
+        // school.setName(teacher_dto.schoolName());O
+        // teacher.setSchool(school);
 
        return teacher;
     }

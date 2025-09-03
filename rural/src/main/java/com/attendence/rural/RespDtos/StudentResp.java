@@ -5,7 +5,7 @@ public record StudentResp(
     int rollno,
     String classname,
     String uniqueCode,  
-    String schoolName
+    String schoolname
     
 ) {
     

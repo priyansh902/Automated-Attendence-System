@@ -1,12 +1,12 @@
 package com.attendence.rural.Mapper;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.attendence.rural.DTos.School_dto;
 import com.attendence.rural.Model.School;
 import com.attendence.rural.RespDtos.School_Resp;
 
-@Service
+@Component
 public class School_mapper {
 
     public School Sschool(School_dto school_dto){

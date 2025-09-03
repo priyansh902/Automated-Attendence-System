@@ -1,6 +1,6 @@
 package com.attendence.rural.Mapper;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.attendence.rural.DTos.Attendence_dto;
 import com.attendence.rural.Model.Attendence;
@@ -8,7 +8,7 @@ import com.attendence.rural.Model.Student;
 import com.attendence.rural.Repositor.Student_Repo;
 import com.attendence.rural.RespDtos.Attendence_Resp;
 
-@Service
+@Component
 public class Attendence_mapper {
 
     private Student_Repo student_Repo;
