@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.attendence.rural.DTos.Student_dto;
+import com.attendence.rural.Excptions.SchoolNotFound;
+import com.attendence.rural.Excptions.StudentNotFound;
 import com.attendence.rural.Mapper.Student_mapper;
 import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Student;
@@ -35,7 +37,7 @@ public class Student_Service implements Student_Service_interface {
     @Override
     public StudentResp createStudent(Student_dto request) {
         School school = school_Repo.findByName(request.schoolname())
-        .orElseThrow(()-> new RuntimeException("School Not found"+ request.schoolname()));
+        .orElseThrow(()-> new SchoolNotFound("School Not found"+ request.schoolname()));
 
         Student student = student_mapper.toEntity(request);
         student.setSchool(school);
@@ -56,7 +58,7 @@ public class Student_Service implements Student_Service_interface {
     @Override
     public StudentResp getStudentByRollno(int rollno) {
         Student student = student_Repo.findByRollno(rollno)
-            .orElseThrow(() -> new RuntimeException("Student not find with " + rollno));
+            .orElseThrow(() -> new StudentNotFound("Student not find with " + rollno));
 
             return student_mapper.studentResp(student);
     }
@@ -69,7 +71,7 @@ public class Student_Service implements Student_Service_interface {
     @Override
     public void deleteStudent(int rollno) {
         Student student = student_Repo.findByRollno(rollno)
-            .orElseThrow(() -> new RuntimeException("Student not found with " + rollno));
+            .orElseThrow(() -> new StudentNotFound("Student not found with " + rollno));
             student_Repo.delete(student);
 
     }
