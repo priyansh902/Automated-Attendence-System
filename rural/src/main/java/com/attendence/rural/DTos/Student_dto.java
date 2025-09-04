@@ -14,8 +14,8 @@ public record Student_dto(
     @NotBlank
     String classname,
 
-    @NotBlank
-    String uniquecode,
+    // @NotBlank
+    // String uniquecode,
 
     @NotBlank
     String schoolname

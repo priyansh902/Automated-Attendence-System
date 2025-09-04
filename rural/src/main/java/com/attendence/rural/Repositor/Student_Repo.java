@@ -9,11 +9,13 @@ import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Student;
 
 
+
 @Repository
 public interface Student_Repo extends JpaRepository<Student, Integer> {
     int countBySchool(School school);
 
     Optional  <Student> findByRollno(int rollno);
     Optional <Student> findByUniquecode(String uniquecode);
+    Optional <Student> findByName(String name);
     
 }

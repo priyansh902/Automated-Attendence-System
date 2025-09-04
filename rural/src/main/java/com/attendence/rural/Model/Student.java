@@ -24,12 +24,12 @@ public class Student {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false)
     private int rollno;
 
     private String classname;
 
-    @Column(unique = true,length = 100)
+    @Column(unique = true,length = 100,updatable = false,nullable = false)
     private String uniquecode;
 
     @ManyToOne

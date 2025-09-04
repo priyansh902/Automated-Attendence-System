@@ -39,8 +39,16 @@ public class Student_Service implements Student_Service_interface {
         School school = school_Repo.findByName(request.schoolname())
         .orElseThrow(()-> new SchoolNotFound("School Not found"+ request.schoolname()));
 
-        Student student = student_mapper.toEntity(request);
-        student.setSchool(school);
+        // Student student = student_mapper.toEntity(request);
+        // student.setSchool(school);
+
+        Student student;
+        String uniquecode;
+        do {
+            uniquecode = student_mapper.generateBaseCode(school, request.rollno());
+            student = student_mapper.toEntity(request,school,uniquecode);
+
+        } while (student_Repo.findByUniquecode(uniquecode).isPresent());
 
         // Student student = new Student();
         // student.setName(request.name());
