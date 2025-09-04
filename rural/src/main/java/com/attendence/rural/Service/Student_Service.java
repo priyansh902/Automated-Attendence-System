@@ -37,7 +37,7 @@ public class Student_Service implements Student_Service_interface {
     @Override
     public StudentResp createStudent(Student_dto request) {
         School school = school_Repo.findByName(request.schoolname())
-        .orElseThrow(()-> new SchoolNotFound("School Not found"+ request.schoolname()));
+        .orElseThrow(()-> new SchoolNotFound("School Not found "+ request.schoolname()));
 
         // Student student = student_mapper.toEntity(request);
         // student.setSchool(school);

@@ -1,5 +1,8 @@
 package com.attendence.rural.Mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.attendence.rural.DTos.Teacher_dto;
@@ -9,7 +12,7 @@ import com.attendence.rural.RespDtos.Teache_Resp;
 @Component
 public class Teacher_mapper {
 
-    public Teacher ttTeacher(Teacher_dto teacher_dto){
+    public Teacher toEntity(Teacher_dto teacher_dto){
         var teacher = new Teacher();
         teacher.setName(teacher.getName());
         teacher.setPassword(teacher.getPassword());
@@ -24,6 +27,12 @@ public class Teacher_mapper {
 
     public Teache_Resp teache_Resp(Teacher teacher){
         return new Teache_Resp(teacher.getName(), teacher.getUsername(),teacher.getSchool().getName());
+    }
+
+    public List<Teache_Resp> toRespList(List<Teacher> teachers){
+        return teachers.stream()
+            .map(this::teache_Resp)
+                .collect(Collectors.toList());
     }
     
 }
