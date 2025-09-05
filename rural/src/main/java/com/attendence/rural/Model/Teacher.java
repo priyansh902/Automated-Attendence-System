@@ -30,6 +30,9 @@ public class Teacher {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false,length = 50)
+    private String subject;
+
     @ManyToOne
     @JoinColumn(name = "school_id")
     private School school;
