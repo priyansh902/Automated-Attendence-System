@@ -34,6 +34,7 @@ public class Teacher_Controller {
         this.teacher_Service = teacher_Service;
     }
 
+    // register teacher in the database
     @PostMapping("/register")
     public ResponseEntity<Teache_Resp> register(@Valid
                                                 @RequestBody Teacher_dto teacher_dto
@@ -41,21 +42,25 @@ public class Teacher_Controller {
         return ResponseEntity.status(HttpStatus.CREATED).body(teacher_AuthService.register(teacher_dto));
     }
 
+    // login teacher in to the database
      @PostMapping("/login")
     public ResponseEntity<login_REsp> login(@Valid @RequestBody Login_dto dto) {
         return ResponseEntity.ok(teacher_AuthService.login(dto));
     }
 
+    // return teacher by username in the database
     @GetMapping("/{username}")
     public ResponseEntity<Teache_Resp> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(teacher_Service.getTeacherByusername(username));
     }
 
+    // return list of all teacher in the database
     @GetMapping
     public ResponseEntity<List<Teache_Resp>> getAll() {
         return ResponseEntity.ok(teacher_Service.getAllTeachers());
     }
 
+    // delete teacher data in to the database
      @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(@PathVariable String username) {
         teacher_Service.deleteTeacher(username);

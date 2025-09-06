@@ -1,5 +1,8 @@
 package com.attendence.rural.Mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.attendence.rural.DTos.Attendence_dto;
@@ -17,7 +20,7 @@ public class Attendence_mapper {
         this.student_Repo = student_Repo;
     }
 
-    public Attendence aattendence(Attendence_dto attendence_dto){
+    public Attendence toEntity(Attendence_dto attendence_dto){
         var attendence = new Attendence();
        
         Student student = student_Repo.
@@ -32,12 +35,24 @@ public class Attendence_mapper {
         return attendence;
     }
 
-    public Attendence_Resp attendence_Resp(Attendence attendence){
+    public Attendence_Resp toResp(Attendence attendence){
        
-        Student s = new Attendence().getStudent();
+         Student s = new Attendence().getStudent();
 
-        return new Attendence_Resp(s.getName(), s.getRollno(), s.getClassname(), s.getSchool().getName(), attendence.getDate(), attendence.getStatus(), attendence.isSyncStatus());
+        return new Attendence_Resp(s.getName(),
+                                     s.getRollno(),
+                                        s.getClassname(), 
+                                             s.getSchool().getName(),
+                                                 attendence.getDate(),
+                                                     attendence.getStatus(), 
+                                                        attendence.isSyncStatus());
 
+    }
+
+    public List<Attendence_Resp> toRespsList(List<Attendence> records){
+        return records.stream()
+            .map(this::toResp)
+                .collect(Collectors.toList());
     }
     
 }

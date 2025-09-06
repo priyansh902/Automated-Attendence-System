@@ -28,6 +28,7 @@ public class School_Controller {
         this.school_Service = school_Service;
     }
     
+    // Create School in the database
     @PostMapping
     public ResponseEntity<School_Resp> createSchool(
                     @Valid @RequestBody
@@ -37,6 +38,7 @@ public class School_Controller {
         return ResponseEntity.status(HttpStatus.CREATED).body(school_Resp);
     }
 
+    // Get School By name in the database
     @GetMapping("/{name}")
     public ResponseEntity<School_Resp> getSchool(
                                 @PathVariable 
@@ -46,11 +48,13 @@ public class School_Controller {
                                  
     }
 
+    // Return list of School in the database
     @GetMapping
     public ResponseEntity<List<School_Resp>> getAllSchools() {
         return ResponseEntity.ok(school_Service.getAllSchools());
     }
 
+    // Delete Schooldata in to the database
     @DeleteMapping
     public  ResponseEntity<Void> deleteSchool (
                                         @PathVariable String name

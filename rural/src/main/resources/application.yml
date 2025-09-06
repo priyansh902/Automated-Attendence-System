@@ -3,7 +3,7 @@
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/Deer?createDatabaseIfNotExist=true
+    url: jdbc:mysql://localhost:3306/deer?createDatabaseIfNotExist=true
     username: root
     password: 9027707502
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -16,6 +16,6 @@ spring:
 
 jwt:
   secret: mySupersihAttendenceAutomateSysytem
-  expirations: 3600000
+  expirations: 86400000
       
 

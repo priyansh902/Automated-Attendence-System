@@ -30,27 +30,28 @@ public class Student_Controller {
     }
     
 
+    //  Create student in the database but first create school
      @PostMapping
     public ResponseEntity<StudentResp> createStudent(@Valid @RequestBody Student_dto request) {
         StudentResp resp = student_Service.createStudent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    // GET Student by roll number
+    // GET Student by roll number in the database
     @GetMapping("/{rollno}")
     public ResponseEntity<StudentResp> getStudentByRollno(@PathVariable int rollno) {
         StudentResp resp = student_Service.getStudentByRollno(rollno);
         return ResponseEntity.ok(resp);
     }
 
-    // GET All Students
+    // return list of Students in the database
     @GetMapping
     public ResponseEntity<List<StudentResp>> getAllStudents() {
         List<StudentResp> students = student_Service.getAllStudents();
         return ResponseEntity.ok(students);
     }
 
-    // DELETE Student by roll number
+    // DELETE Student data by roll number in the database
     @DeleteMapping("/{rollno}")
     public ResponseEntity<Void> deleteStudent(@PathVariable int rollno) {
         student_Service.deleteStudent(rollno);
