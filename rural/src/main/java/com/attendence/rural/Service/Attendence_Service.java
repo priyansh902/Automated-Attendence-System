@@ -3,11 +3,13 @@ package com.attendence.rural.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.attendence.rural.DTos.Attendence_offlineDto;
 import com.attendence.rural.DTos.Attendence_scanDto;
 import com.attendence.rural.Excptions.Custom_ex;
 import com.attendence.rural.Excptions.StudentNotFound;
@@ -144,6 +146,35 @@ public class Attendence_Service implements Attendence_interface {
             attendence_Repo.findByDate(date)
                     .stream().map(attendence_mapper::toResp)
                         .collect(Collectors.toList());
+        
+    }
+
+    @Override
+    public List<Attendence_Resp> syncOfflineData(List<Attendence_offlineDto> offlineRecords) {
+    
+        List<Attendence_Resp> responses = new ArrayList<>();
+
+            for (Attendence_offlineDto dto : offlineRecords) {
+             Student student = student_Repo.findByUniquecode(dto.uniquecode())
+                .orElseThrow(() -> new StudentNotFound("Invalid code: " + dto.uniquecode()));
+
+             // check if record already exists
+                 Optional<Attendence> existing = attendence_Repo.findByStudentAndDate(student, dto.date());
+             if (existing.isPresent()) {
+            responses.add(attendence_mapper.toResp(existing.get())); // already marked, skip
+            continue;
+             }
+
+            Attendence attendance = new Attendence();
+             attendance.setStudent(student);
+                 attendance.setDate(dto.date());
+                     attendance.setStatus(dto.status());
+                        attendance.setSyncStatus(true); // ✅ flagged as offline sync
+
+        Attendence saved = attendence_Repo.save(attendance);
+        responses.add(attendence_mapper.toResp(saved));
+            }
+         return responses;
         
     }
 
