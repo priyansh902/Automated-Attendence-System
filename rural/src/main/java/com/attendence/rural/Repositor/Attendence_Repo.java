@@ -14,6 +14,8 @@ import com.attendence.rural.Model.Student;
 @Repository
 public interface Attendence_Repo extends JpaRepository<Attendence,Integer> {
     Optional <Attendence> findByStudentAndDate(Student student, LocalDate date);
+    Optional<Attendence> findFirstByStudentAndDate(Student student, LocalDate date);
+
     List<Attendence> findByStudent(Student student);
     List<Attendence> findByDate(LocalDate date);
 

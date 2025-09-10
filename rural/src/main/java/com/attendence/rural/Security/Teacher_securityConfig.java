@@ -39,7 +39,13 @@ public class Teacher_securityConfig {
             .csrf(AbstractHttpConfigurer::disable) //csrf not need for jwt
                 .cors(cors -> cors.configurationSource(configurationSource()))
                     .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/teachers/register", "/api/teachers/login").permitAll()
+                        .requestMatchers("/api/teachers/register", "/api/teachers/login"
+                            , "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                     "/swagger-resources/**",
+                                         "/webjars/**",
+                                              "/attendance-api.yaml"
+                        ).permitAll()
                             .anyRequest().authenticated()             )
                                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                     .addFilterBefore(teacher_JwtFilter, UsernamePasswordAuthenticationFilter.class)

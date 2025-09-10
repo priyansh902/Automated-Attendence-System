@@ -37,7 +37,7 @@ public class Attendence_mapper {
 
     public Attendence_Resp toResp(Attendence attendence){
        
-         Student s = new Attendence().getStudent();
+         Student s = attendence.getStudent();
 
         return new Attendence_Resp(s.getName(),
                                      s.getRollno(),

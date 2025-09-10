@@ -63,7 +63,14 @@ public class Attendence_Service implements Attendence_interface {
         List<Student> allsStudents = student_Repo.findAll();
         List<Attendence_Resp> absents = new ArrayList<>();
 
+        
         for(Student s : allsStudents){
+
+            if(s == null  || s.getName() == null){
+                System.out.println("Skip invalid student: "+ s);
+                continue;
+            } 
+            
             boolean Already = attendence_Repo.findByStudentAndDate(s, date).isPresent();
             if(!Already) {
                 Attendence absent = new Attendence();
@@ -73,9 +80,18 @@ public class Attendence_Service implements Attendence_interface {
                 absent.setStatus(Status.Absent);
                 absent.setSyncStatus(false);
                 Attendence saved = attendence_Repo.save(absent);
-                absents.add(attendence_mapper.toResp(saved));
-            }
+                // absents.add(attendence_mapper.toResp(saved));
+
+                  if (saved != null && saved.getStudent() != null) {
+                      Attendence_Resp resp = attendence_mapper.toResp(saved);
+                         
+                             absents.add(resp);
+                 } else {
+             System.out.println("Warning: Saved attendance or student is null for student: " + s.getName());
+             }
         }
+    }
+             
         return absents;
     }
 
@@ -159,10 +175,14 @@ public class Attendence_Service implements Attendence_interface {
                 .orElseThrow(() -> new StudentNotFound("Invalid code: " + dto.uniquecode()));
 
              // check if record already exists
-                 Optional<Attendence> existing = attendence_Repo.findByStudentAndDate(student, dto.date());
+                 Optional<Attendence> existing = attendence_Repo.findFirstByStudentAndDate(student, dto.date());
              if (existing.isPresent()) {
-            responses.add(attendence_mapper.toResp(existing.get())); // already marked, skip
-            continue;
+                Attendence att = existing.get();
+                 att.setStatus(dto.status());
+                     att.setSyncStatus(true);
+                         Attendence updated = attendence_Repo.save(att);
+             responses.add(attendence_mapper.toResp(updated)); 
+             continue;
              }
 
             Attendence attendance = new Attendence();

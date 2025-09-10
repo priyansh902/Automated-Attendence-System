@@ -16,10 +16,13 @@ import com.attendence.rural.DTos.School_dto;
 import com.attendence.rural.RespDtos.School_Resp;
 import com.attendence.rural.Service.School_Service;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/schools")
+@Tag(name = "School APIs", description = "Operation related to School Apis")
 public class School_Controller {
 
     private final School_Service school_Service;
@@ -28,7 +31,7 @@ public class School_Controller {
         this.school_Service = school_Service;
     }
     
-    // Create School in the database
+    @Operation(summary = "Create school", description = "Add a new school to the system")
     @PostMapping
     public ResponseEntity<School_Resp> createSchool(
                     @Valid @RequestBody
@@ -38,7 +41,7 @@ public class School_Controller {
         return ResponseEntity.status(HttpStatus.CREATED).body(school_Resp);
     }
 
-    // Get School By name in the database
+    @Operation(summary = "Get school by name", description = "Retrieve school details by name")
     @GetMapping("/{name}")
     public ResponseEntity<School_Resp> getSchool(
                                 @PathVariable 
@@ -48,13 +51,13 @@ public class School_Controller {
                                  
     }
 
-    // Return list of School in the database
+    @Operation(summary = "Get all schools", description = "Retrieve all schools")
     @GetMapping
     public ResponseEntity<List<School_Resp>> getAllSchools() {
         return ResponseEntity.ok(school_Service.getAllSchools());
     }
 
-    // Delete Schooldata in to the database
+    @Operation(summary = "Delete school", description = "Remove a school by name")
     @DeleteMapping
     public  ResponseEntity<Void> deleteSchool (
                                         @PathVariable String name

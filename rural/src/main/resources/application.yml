@@ -17,5 +17,10 @@ spring:
 jwt:
   secret: mySupersihAttendenceAutomateSysytem
   expirations: 86400000
-      
+
+springdoc:
+  swagger-ui:
+    url: /attendance-api.yaml
+
+
 

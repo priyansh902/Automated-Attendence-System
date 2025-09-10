@@ -19,10 +19,13 @@ import com.attendence.rural.RespDtos.login_REsp;
 import com.attendence.rural.Service.Teacher_AuthService;
 import com.attendence.rural.Service.Teacher_Service;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/teachers")
+@Tag(name = "Teacher APIs", description = "Operations related to teachers")
 public class Teacher_Controller {
 
     private final Teacher_Service teacher_Service;
@@ -34,7 +37,8 @@ public class Teacher_Controller {
         this.teacher_Service = teacher_Service;
     }
 
-    // register teacher in the database
+
+    @Operation(summary = "Register teacher", description = "Create a new teacher account")
     @PostMapping("/register")
     public ResponseEntity<Teache_Resp> register(@Valid
                                                 @RequestBody Teacher_dto teacher_dto
@@ -42,25 +46,25 @@ public class Teacher_Controller {
         return ResponseEntity.status(HttpStatus.CREATED).body(teacher_AuthService.register(teacher_dto));
     }
 
-    // login teacher in to the database
+    @Operation(summary = "Teacher login", description = "Login and receive JWT token")
      @PostMapping("/login")
     public ResponseEntity<login_REsp> login(@Valid @RequestBody Login_dto dto) {
         return ResponseEntity.ok(teacher_AuthService.login(dto));
     }
 
-    // return teacher by username in the database
+    @Operation(summary = "Get teacher by username", description = "Retrieve teacher details")
     @GetMapping("/{username}")
     public ResponseEntity<Teache_Resp> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(teacher_Service.getTeacherByusername(username));
     }
 
-    // return list of all teacher in the database
+    @Operation(summary = "Get all teachers", description = "Retrieve all teachers")
     @GetMapping
     public ResponseEntity<List<Teache_Resp>> getAll() {
         return ResponseEntity.ok(teacher_Service.getAllTeachers());
     }
 
-    // delete teacher data in to the database
+    @Operation(summary = "Delete teacher", description = "Remove teacher account by username")
      @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(@PathVariable String username) {
         teacher_Service.deleteTeacher(username);
