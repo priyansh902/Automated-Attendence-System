@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.attendence.rural.DTos.Attendence_offlineDto;
+import com.attendence.rural.DTos.Attendence_rfidDto;
 import com.attendence.rural.DTos.Attendence_scanDto;
 import com.attendence.rural.RespDtos.Attendence_Resp;
 import com.attendence.rural.RespDtos.Attendence_summaryReasp;
@@ -34,11 +35,13 @@ public class Attendence_Controller {
         this.attendence_Service = attendence_Service;
     }
 
-    @Operation(summary = "Mark attendance by scan", description = "Student scans their unique code to mark attendance")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Attendance marked successfully"),
-        @ApiResponse(responseCode = "404", description = "Student not found")
-    })
+
+         @Operation(summary = "Scan attendance (QR or RFID)")
+          @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Attendance marked successfully"),
+         @ApiResponse(responseCode = "400", description = "Missing QR or RFID"),
+         @ApiResponse(responseCode = "404", description = "Student not found")
+        })
      // Student scans in the database
     @PostMapping("/scan")
     public ResponseEntity<Attendence_Resp> scan(@Valid @RequestBody Attendence_scanDto dto) {
@@ -53,6 +56,14 @@ public class Attendence_Controller {
     public ResponseEntity<List<Attendence_Resp>> finalizeToday() {
         List<Attendence_Resp> marked = attendence_Service.finalizAttendenceForDate(LocalDate.now());
         return ResponseEntity.ok(marked);
+    }
+
+    @Operation(summary = "mark Attendence by rfid", description = "Attendence marked by rfid device")
+    
+     @PostMapping("/rfid")
+    public ResponseEntity<Attendence_Resp> markAttendanceByRfid(@RequestBody Attendence_rfidDto dto) {
+        Attendence_Resp resp = attendence_Service.markByRfid(dto.rfidTagId());
+        return ResponseEntity.ok(resp);
     }
 
     
@@ -76,7 +87,13 @@ public class Attendence_Controller {
         return ResponseEntity.ok(attendence_Service.getMonthlySummary(uniqueCode, year, month));
     }
 
-    @Operation(summary = "Sync offline data", description = "Upload and sync attendance data when back online")
+     @Operation(summary = "Sync offline attendance (QR or RFID)")
+         @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Offline data synced successfully"),
+             @ApiResponse(responseCode = "400", description = "Missing QR or RFID in offline record"),
+                @ApiResponse(responseCode = "404", description = "Student not found")
+         })
+
     @PostMapping("/sync")
     public ResponseEntity<List<Attendence_Resp>> syncOffline(
         @Valid @RequestBody List<Attendence_offlineDto> offlineRecords) {

@@ -1,5 +1,6 @@
 package com.attendence.rural.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -34,33 +35,20 @@ public class Student_Service implements Student_Service_interface {
        this. school_Repo = school_Repo;
     }
 
-    @Override
+      @Override
     public StudentResp createStudent(Student_dto request) {
         School school = school_Repo.findByName(request.schoolname())
-        .orElseThrow(()-> new SchoolNotFound("School Not found "+ request.schoolname()));
-
-        // Student student = student_mapper.toEntity(request);
-        // student.setSchool(school);
+                .orElseThrow(() -> new SchoolNotFound("School not found: " + request.schoolname()));
 
         Student student;
         String uniquecode;
         do {
             uniquecode = student_mapper.generateBaseCode(school, request.rollno());
-            student = student_mapper.toEntity(request,school,uniquecode);
-
+            student = student_mapper.toEntity(request, school, uniquecode);
         } while (student_Repo.findByUniquecode(uniquecode).isPresent());
 
-        // Student student = new Student();
-        // student.setName(request.name());
-        // student.setRollno(request.rollno());
-        // student.setClassname(request.classname());
-        // student.setUniquecode(request.uniquecode());
-        // student.setSchool(school);
-
-         Student saved =  student_Repo.save(student);
-        
+        Student saved = student_Repo.save(student);
         return student_mapper.studentResp(saved);
-
     }
 
     @Override
@@ -82,6 +70,29 @@ public class Student_Service implements Student_Service_interface {
             .orElseThrow(() -> new StudentNotFound("Student not found with " + rollno));
             student_Repo.delete(student);
 
+    }
+
+    // Bulk registration
+    @Override
+    public List<StudentResp> createStudents(List<Student_dto> requests) {
+        List<Student> students = new ArrayList<>();
+
+        for (Student_dto dto : requests) {
+            School school = school_Repo.findByName(dto.schoolname())
+                    .orElseThrow(() -> new SchoolNotFound("School not found: " + dto.schoolname()));
+
+            Student student;
+            String uniquecode;
+            do {
+                uniquecode = student_mapper.generateBaseCode(school, dto.rollno());
+                student = student_mapper.toEntity(dto, school, uniquecode);
+            } while (student_Repo.findByUniquecode(uniquecode).isPresent());
+
+            students.add(student);
+        }
+
+        List<Student> savedList = student_Repo.saveAll(students);
+        return student_mapper.toRespsList(savedList);
     }
 
      

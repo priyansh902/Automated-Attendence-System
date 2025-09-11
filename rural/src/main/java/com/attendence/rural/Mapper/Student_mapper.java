@@ -9,16 +9,33 @@ import org.springframework.stereotype.Component;
 import com.attendence.rural.DTos.Student_dto;
 import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Student;
+import com.attendence.rural.Repositor.Student_Repo;
 import com.attendence.rural.RespDtos.StudentResp;
 
 @Component
 public class Student_mapper {
+
+    private final Student_Repo student_Repo;
+
+    Student_mapper(Student_Repo student_Repo) {
+        this.student_Repo = student_Repo;
+    }
     
     public Student toEntity(Student_dto student_dto){
         var student = new Student();
         student.setName(student_dto.name());
         student.setRollno(student_dto.rollno());
         student.setClassname(student_dto.classname());
+
+         student.setRfidTagId(generateRandomRFID());
+        
+
+        //   if (student_dto.rfidTagId() == null || student_dto.rfidTagId().isBlank()) {
+        //     student.setRfidTagId(generateRandomRFID());
+        //     } else {
+        //     student.setRfidTagId(student_dto.rfidTagId());
+        //     }
+
         // student.setUniquecode(student_dto.uniquecode());
 
         // student.getUniquecode();
@@ -36,7 +53,16 @@ public class Student_mapper {
              student.setRollno(dto.rollno());
                  student.setClassname(dto.classname());
                      student.setUniquecode(uniqueCode);
+                        
                          student.setSchool(school);
+                          student.setRfidTagId(generateRandomRFID());
+
+
+                        //  if (dto.rfidTagId() == null || dto.rfidTagId().isBlank()) {
+                        //  student.setRfidTagId(generateRandomRFID());
+                        //     } else {
+                        // student.setRfidTagId(dto.rfidTagId());
+                        //   }
          return student;
     }
 
@@ -50,19 +76,45 @@ public class Student_mapper {
         return schoolCode + "-"+rollno+"-"+random;
     }
 
-    public List<Student> toEntryList(List<Student_dto> student_dtos){
-        return student_dtos.stream()
-            .map(this::toEntity)
-             .collect(Collectors.toList());
+
+     public List<Student> toEntryList(List<Student_dto> dtos) {
+        return dtos.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
     }
+
+    
+    // public List<Student> toEntryList(List<Student_dto> student_dtos){
+    //     return student_dtos.stream()
+    //      .map(dto -> {
+    //         Student student = toEntity(dto); 
+            
+    //         if (student.getRfidTagId() == null || student.getRfidTagId().isBlank()) {
+    //             student.setRfidTagId(generateRandomRFID());
+    //         }
+    //         return student;
+    //     })
+    //     .collect(Collectors.toList());
+    // }
+
+     public String generateRandomRFID() {
+        String rfid;
+        do {
+            rfid = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10).toUpperCase();
+        } while (student_Repo.findByRfidTagId(rfid).isPresent());
+        return rfid;
+        }
 
     public StudentResp studentResp(Student student){
         return new StudentResp(student.getName(), 
                                 student.getRollno(),
                                  student.getClassname(), 
-                                 student.getUniquecode(),
-                                  student.getSchool().getName());
+                                    student.getUniquecode(),
+                                        student.getRfidTagId(),
+                                         student.getSchool() == null ? null :student.getSchool().getName());
     }
+
+    
 
     public List<StudentResp> toRespsList(List<Student> students){
         return students.stream()

@@ -2,12 +2,12 @@ package com.attendence.rural.DTos;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record School_dto(
-    @NotBlank
-     String name,
+    public record School_dto(
+        @NotBlank
+        String name,
 
-     @NotBlank
-    String location
-) {
-    
-}
+        @NotBlank
+        String location
+    ) {
+        
+    }

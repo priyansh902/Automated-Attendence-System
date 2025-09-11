@@ -58,6 +58,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/Attendence_Resp'
 
+  /api/attendance/rfid:
+    post:
+      tags:
+        - Attendance APIs
+      summary: Mark attendance by RFID scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rfidTagId:
+                  type: string
+                  example: "RFID123456"
+      responses:
+        "200":
+          description: Attendance marked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_Resp'
+
+
   /api/attendence/student/{uniqueCode}:
     get:
       tags: [Attendance APIs]

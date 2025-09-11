@@ -40,14 +40,17 @@ public class Attendence_ExportService {
             Row header = sheet.createRow(0);
             header.createCell(0).setCellValue("Date");
             header.createCell(1).setCellValue("Status");
-            header.createCell(2).setCellValue("Synced");
+            header.createCell(2).setCellValue("RFID");
+            header.createCell(3).setCellValue("Synced");
 
             int rowIndex = 1;
             for (Attendence a : records) {
                 Row r = sheet.createRow(rowIndex++);
                 r.createCell(0).setCellValue(a.getDate().toString());
                 r.createCell(1).setCellValue(a.getStatus().name());
-                r.createCell(2).setCellValue(a.isSyncStatus() ? "Yes" : "No");
+                r.createCell(2).setCellValue(student.getRfidTagId());
+                r.createCell(3).setCellValue(a.isSyncStatus() ? "Yes" : "No");
+                
             }
 
             workbook.write(out);
@@ -74,11 +77,13 @@ public class Attendence_ExportService {
         PdfPTable table = new PdfPTable(3);
         table.setWidthPercentage(100);
         table.addCell("Date");
+        table.addCell("RFID");
         table.addCell("Status");
         table.addCell("Synced");
 
         for (Attendence a : records) {
             table.addCell(a.getDate().toString());
+            table.addCell(student.getRfidTagId() != null ? student.getRfidTagId() : "N/A");
             table.addCell(a.getStatus().name());
             table.addCell(a.isSyncStatus() ? "Yes" : "No");
         }

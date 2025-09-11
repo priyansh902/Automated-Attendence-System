@@ -4,7 +4,8 @@ public record StudentResp(
     String name,
     int rollno,
     String classname,
-    String uniqueCode,  
+    String uniqueCode, 
+    String rfidTagId, 
     String schoolname
     
 ) {

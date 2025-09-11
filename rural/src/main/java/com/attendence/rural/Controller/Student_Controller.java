@@ -33,7 +33,7 @@ public class Student_Controller {
     
 
     @Operation(summary = "Create student", description = "Add a new student (requires school first)")
-     @PostMapping
+     @PostMapping("/register")
     public ResponseEntity<StudentResp> createStudent(@Valid @RequestBody Student_dto request) {
         StudentResp resp = student_Service.createStudent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);

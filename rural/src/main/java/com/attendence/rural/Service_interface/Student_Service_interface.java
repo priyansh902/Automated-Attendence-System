@@ -10,4 +10,5 @@ public interface Student_Service_interface {
     StudentResp getStudentByRollno(int rollno);
     List<StudentResp> getAllStudents();
     void deleteStudent(int rollno);
+     List<StudentResp> createStudents(List<Student_dto> requests);
 }

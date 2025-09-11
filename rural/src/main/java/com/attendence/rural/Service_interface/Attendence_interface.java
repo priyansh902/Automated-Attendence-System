@@ -22,7 +22,10 @@ public interface Attendence_interface {
 
     List<Attendence_Resp> getAttendenceForDate(LocalDate date);
 
-    List<Attendence_Resp> syncOfflineData(List<Attendence_offlineDto> offlineRecords);
+    public List<Attendence_Resp> syncOfflineData(List<Attendence_offlineDto> offlineRecords);
+
+    Attendence_Resp markByRfid(String rfidTagId);
+
 
 
 }

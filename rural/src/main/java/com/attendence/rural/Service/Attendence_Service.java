@@ -40,12 +40,29 @@ public class Attendence_Service implements Attendence_interface {
     @Override
     public Attendence_Resp markByScan(Attendence_scanDto dto) {
     
-        Student student = student_Repo.findByUniquecode(dto.uniquecode())
-                            .orElseThrow(() -> new StudentNotFound("Student Not Found: " + dto.uniquecode()));
+        // Student student = student_Repo.findByUniquecode(dto.uniquecode())
+        //                     .orElseThrow(() -> new StudentNotFound("Student Not Found: " + dto.uniquecode()));
 
-        LocalDate today = LocalDate.now();
-        attendence_Repo.findByStudentAndDate(student, today)
-                                                .orElseThrow(() -> new Custom_ex("Attendence Already marked: " + student.getName()));
+        
+        Student student;
+
+
+        if (dto.uniquecode() != null && !dto.uniquecode().isBlank()) {
+              student = student_Repo.findByUniquecode(dto.uniquecode())
+                 .orElseThrow(() -> new StudentNotFound("Student Not Found: " + dto.uniquecode()));
+                } else if (dto.rfidTagId() != null && !dto.rfidTagId().isBlank()) {
+             student = student_Repo.findByRfidTagId(dto.rfidTagId())
+                 .orElseThrow(() -> new StudentNotFound("Invalid RFID: " + dto.rfidTagId()));
+            } else {
+                 throw new IllegalArgumentException("Either uniquecode or rfidTagId must be provided.");
+                }
+
+                 LocalDate today = LocalDate.now();
+                    if (attendence_Repo.findByStudentAndDate(student, today).isPresent()) {
+                        throw new Custom_ex("Attendance Already marked: " + student.getName());
+                    }
+
+
 
         Attendence attendence = new Attendence();
         attendence.setStudent(student);
@@ -165,39 +182,75 @@ public class Attendence_Service implements Attendence_interface {
         
     }
 
-    @Override
-    public List<Attendence_Resp> syncOfflineData(List<Attendence_offlineDto> offlineRecords) {
-    
-        List<Attendence_Resp> responses = new ArrayList<>();
+         @Override
+        public List<Attendence_Resp> syncOfflineData(List<Attendence_offlineDto> offlineRecords) {
+
+         List<Attendence_Resp> responses = new ArrayList<>();
 
             for (Attendence_offlineDto dto : offlineRecords) {
-             Student student = student_Repo.findByUniquecode(dto.uniquecode())
-                .orElseThrow(() -> new StudentNotFound("Invalid code: " + dto.uniquecode()));
 
-             // check if record already exists
-                 Optional<Attendence> existing = attendence_Repo.findFirstByStudentAndDate(student, dto.date());
-             if (existing.isPresent()) {
-                Attendence att = existing.get();
-                 att.setStatus(dto.status());
-                     att.setSyncStatus(true);
-                         Attendence updated = attendence_Repo.save(att);
-             responses.add(attendence_mapper.toResp(updated)); 
-             continue;
-             }
+         Student student = null;
 
-            Attendence attendance = new Attendence();
-             attendance.setStudent(student);
-                 attendance.setDate(dto.date());
-                     attendance.setStatus(dto.status());
-                        attendance.setSyncStatus(true); // ✅ flagged as offline sync
+         // Try to identify student by QR/uniquecode first
+            if (dto.uniquecode() != null && !dto.uniquecode().isBlank()) {
+            student = student_Repo.findByUniquecode(dto.uniquecode())
+                     .orElseThrow(() -> new StudentNotFound("Invalid code: " + dto.uniquecode()));
+            } 
+            // Fallback: identify by RFID
+            else if (dto.rfidTagId() != null && !dto.rfidTagId().isBlank()) {
+            student = student_Repo.findByRfidTagId(dto.rfidTagId())
+                     .orElseThrow(() -> new StudentNotFound("Invalid RFID: " + dto.rfidTagId()));
+            } 
+            else {
+            throw new IllegalArgumentException("Either uniquecode or rfidTagId must be provided in offline record.");
+            }
+
+          // Check if record already exists for this student on that date
+            Optional<Attendence> existing = attendence_Repo.findFirstByStudentAndDate(student, dto.date());
+         if (existing.isPresent()) {
+            Attendence att = existing.get();
+            att.setStatus(dto.status());
+            att.setSyncStatus(true); // mark as synced
+            Attendence updated = attendence_Repo.save(att);
+            responses.add(attendence_mapper.toResp(updated));
+            continue;
+        }
+
+        // Otherwise, create a new attendance record
+        Attendence attendance = new Attendence();
+        attendance.setStudent(student);
+        attendance.setDate(dto.date());
+        attendance.setStatus(dto.status());
+        attendance.setSyncStatus(true); // mark as synced
 
         Attendence saved = attendence_Repo.save(attendance);
         responses.add(attendence_mapper.toResp(saved));
-            }
-         return responses;
-        
     }
 
+    return responses;
+}
+
+         @Override
+         public Attendence_Resp markByRfid(String rfidTagId) {
+          
+            Student student = student_Repo.findByRfidTagId(rfidTagId) 
+                .orElseThrow(() -> new StudentNotFound("No student found for RFID: "
+                     + rfidTagId)); LocalDate today = LocalDate.now();
+                     
+                     boolean already = attendence_Repo.findByStudentAndDate(student, today)
+                        .isPresent(); if (already) { throw new Custom_ex("Attendance already marked: " 
+                        + student.getName()); } 
+                            Attendence attendence = new Attendence();
+                            
+                            attendence.setStudent(student);
+                             attendence.setDate(today);   
+                             attendence.setStatus(Status.Present);
+                              attendence.setSyncStatus(false); 
+                              
+                              Attendence saved = attendence_Repo.save(attendence); 
+                              return attendence_mapper.toResp(saved);
+
+        }
    
     
 }

@@ -10,6 +10,7 @@ import com.attendence.rural.Model.Student;
 
 
 
+
 @Repository
 public interface Student_Repo extends JpaRepository<Student, Integer> {
     int countBySchool(School school);
@@ -17,5 +18,6 @@ public interface Student_Repo extends JpaRepository<Student, Integer> {
     Optional  <Student> findByRollno(int rollno);
     Optional <Student> findByUniquecode(String uniquecode);
     Optional <Student> findByName(String name);
+    Optional <Student> findByRfidTagId(String rfidTagId);
     
 }
