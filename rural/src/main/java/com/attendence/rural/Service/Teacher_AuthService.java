@@ -18,8 +18,11 @@ import com.attendence.rural.Repositor.Teacher_Repo;
 import com.attendence.rural.RespDtos.Teache_Resp;
 import com.attendence.rural.RespDtos.login_REsp;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@Slf4j
 public class Teacher_AuthService {
 
     private final Teacher_Repo teacher_Repo;
@@ -29,11 +32,10 @@ public class Teacher_AuthService {
     private final Teacher_jwt teacher_jwt;
 
     public Teacher_AuthService(Teacher_Repo teacher_Repo,
-                                School_Repo school_Repo,
-                                Teacher_mapper teacher_mapper,
-                                PasswordEncoder passwordEncoder,
-                                Teacher_jwt teacher_jwt
-    ) {
+                               School_Repo school_Repo,
+                               Teacher_mapper teacher_mapper,
+                               PasswordEncoder passwordEncoder,
+                               Teacher_jwt teacher_jwt) {
         this.teacher_Repo = teacher_Repo;
         this.teacher_jwt = teacher_jwt;
         this.teacher_mapper = teacher_mapper;
@@ -42,33 +44,54 @@ public class Teacher_AuthService {
     }
 
     public Teache_Resp register(Teacher_dto dto){
+        log.info("[AUTH][REGISTER] Attempting registration for username={} in school={}", 
+                 dto.username(), dto.schoolName());
+
         School school = school_Repo.findByName(dto.schoolName())
-            .orElseThrow(() -> new SchoolNotFound("School Not Found : " + dto.schoolName()));
+            .orElseThrow(() -> {
+                log.error("[AUTH][REGISTER] School not found: {}", dto.schoolName());
+                return new SchoolNotFound("School Not Found: " + dto.schoolName());
+            });
 
-            String normalizedUserName = dto.username().toLowerCase();
+        String normalizedUsername = dto.username().toLowerCase();
 
-            if(teacher_Repo.findByUsername(normalizedUserName).isPresent()) {
-                throw new Custom_ex("username Already exist: " +dto.username());
+        if(teacher_Repo.findByUsername(normalizedUsername).isPresent()) {
+            log.warn("[AUTH][REGISTER] Username already exists: {}", normalizedUsername);
+            throw new Custom_ex("Username already exists: " + dto.username());
+        }
 
-            }
+        Teacher teacher = teacher_mapper.toEntity(dto, school);
+        teacher.setPassword(passwordEncoder.encode(dto.password())); // hash password
 
-            Teacher teacher = teacher_mapper.toEntity(dto, school);
-            teacher.setPassword(passwordEncoder.encode(dto.password())); //hash password
+        Teacher saved = teacher_Repo.save(teacher);
 
-            Teacher saved = teacher_Repo.save(teacher);
-            return teacher_mapper.teache_Resp(saved);
+        log.info("[AUTH][REGISTER] Registration successful → username={}, teacherId={}, school={}", 
+                 saved.getUsername(), saved.getTeacherId(), saved.getSchool().getName());
+        log.debug("[AUTH][REGISTER] Teacher password hashed, DTO details: {}", dto);
+
+        return teacher_mapper.teache_Resp(saved);
     }
 
-    public login_REsp login (Login_dto dto){
-        Teacher teacher = teacher_Repo.findByUsername(dto.username())
-            .orElseThrow(() -> new TeacherNotFound("Invalid Username/ password "));
+    public login_REsp login(Login_dto dto){
+        String normalizedUsername = dto.username().toLowerCase();
+        log.info("[AUTH][LOGIN] Attempt login for username={}", normalizedUsername);
+
+        Teacher teacher = teacher_Repo.findByUsername(normalizedUsername)
+            .orElseThrow(() -> {
+                log.warn("[AUTH][LOGIN] Invalid username: {}", normalizedUsername);
+                return new TeacherNotFound("Invalid Username/Password");
+            });
 
         if(!passwordEncoder.matches(dto.password(), teacher.getPassword())) {
-            throw new Custom_ex("Invalid username/ Password");
+            log.warn("[AUTH][LOGIN] Invalid password attempt for username={}", normalizedUsername);
+            throw new Custom_ex("Invalid Username/Password");
         }
 
         String token = teacher_jwt.generateToken(teacher.getUsername());
+        log.info("[AUTH][LOGIN] Login successful → username={}, teacherId={}", 
+                 teacher.getUsername(), teacher.getTeacherId());
+        log.debug("[AUTH][LOGIN] JWT token generated: {}", token); // optional, remove in prod
+
         return new login_REsp(token, teacher.getUsername());
     }
-    
 }

@@ -24,7 +24,7 @@ public class Attendence_mapper {
         var attendence = new Attendence();
        
         Student student = student_Repo.
-                            findByRollno(attendence_dto.rollNumber()).
+                            findByRollno(attendence_dto.rollno()).
                             orElseThrow(()-> new RuntimeException("Student Not found"));
 
         attendence.setStudent(student);

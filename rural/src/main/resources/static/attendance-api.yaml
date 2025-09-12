@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Automated Attendance System APIs
   description: REST APIs for managing Schools, Students, Teachers, and Attendance in rural schools.
-  version: 1.0.0
+  version: 1.0.1
 servers:
   - url: http://localhost:8080
     description: Local server
@@ -23,11 +23,11 @@ security:
   - bearerAuth: []
 
 paths:
-
+  # ---------------- Attendance APIs ----------------
   /api/attendence/scan:
     post:
       tags: [Attendance APIs]
-      summary: Mark attendance by scan
+      summary: Mark attendance by QR or RFID scan
       requestBody:
         required: true
         content:
@@ -43,11 +43,13 @@ paths:
                 $ref: '#/components/schemas/Attendence_Resp'
         "404":
           description: Student not found
+        "400":
+          description: Either QR code or RFID must be provided
 
   /api/attendence/finalize:
     post:
       tags: [Attendance APIs]
-      summary: Finalize today's attendance
+      summary: Finalize attendance for a date
       responses:
         "200":
           description: Finalized attendance list
@@ -57,30 +59,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Attendence_Resp'
-
-  /api/attendance/rfid:
-    post:
-      tags:
-        - Attendance APIs
-      summary: Mark attendance by RFID scan
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                rfidTagId:
-                  type: string
-                  example: "RFID123456"
-      responses:
-        "200":
-          description: Attendance marked successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Attendence_Resp'
-
 
   /api/attendence/student/{uniqueCode}:
     get:
@@ -201,6 +179,7 @@ paths:
                 type: string
                 format: binary
 
+  # ---------------- School APIs ----------------
   /api/schools:
     get:
       tags: [School APIs]
@@ -258,6 +237,7 @@ paths:
       responses:
         "204": { description: School deleted }
 
+  # ---------------- Student APIs ----------------
   /api/students:
     get:
       tags: [Student APIs]
@@ -279,7 +259,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudentResp'
+              $ref: '#/components/schemas/Student_dto'
       responses:
         "201":
           description: Student created
@@ -315,6 +295,7 @@ paths:
       responses:
         "204": { description: Student deleted }
 
+  # ---------------- Teacher APIs ----------------
   /api/teachers/register:
     post:
       tags: [Teacher APIs]
@@ -395,47 +376,18 @@ paths:
 
 components:
   schemas:
-
-    Attendence_bulkAtDto:
-      type: object
-      properties:
-        schoolName: { type: string }
-        date: { type: string, format: date }
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attendence_bulkDto'
-      required: [schoolName, date]
-
-    Attendence_bulkDto:
-      type: object
-      properties:
-        uniquecode: { type: string }
-        status: { type: string }
-      required: [uniquecode, status]
-
-    Attendence_dto:
-      type: object
-      properties:
-        studentName: { type: string }
-        rollNumber: { type: integer }
-        date: { type: string, format: date }
-        status: { type: string }
-        syncStatus: { type: boolean }
-
-    Attendence_offlineDto:
-      type: object
-      properties:
-        uniquecode: { type: string }
-        date: { type: string, format: date }
-        status: { type: string }
-      required: [uniquecode, date, status]
-
     Attendence_scanDto:
       type: object
       properties:
-        uniquecode: { type: string }
-      required: [uniquecode]
+        uniquecode:
+          type: string
+          description: "Student unique code from QR scan"
+          example: "SCH-12A-XYZ"
+        rfidTagId:
+          type: string
+          description: "Student RFID tag ID"
+          example: "A1B2C3D4E5"
+      description: "Provide either uniquecode (QR) or rfidTagId (RFID) to mark attendance"
 
     Attendence_Resp:
       type: object
@@ -459,18 +411,30 @@ components:
         presentDays: { type: integer }
         percentage: { type: number, format: float }
 
-    Login_dto:
+    Attendence_offlineDto:
       type: object
       properties:
-        username: { type: string }
-        password: { type: string }
-      required: [username, password]
+        uniquecode: { type: string }
+        date: { type: string, format: date }
+        status: { type: string }
+      required: [uniquecode, date, status]
 
-    login_REsp:
+    Student_dto:
       type: object
       properties:
-        token: { type: string }
-        username: { type: string }
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        schoolname: { type: string }
+
+    StudentResp:
+      type: object
+      properties:
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        uniqueCode: { type: string }
+        schoolname: { type: string }
 
     School_dto:
       type: object
@@ -495,15 +459,6 @@ components:
           items:
             $ref: '#/components/schemas/Teache_Resp'
 
-    StudentResp:
-      type: object
-      properties:
-        name: { type: string }
-        rollno: { type: integer }
-        classname: { type: string }
-        uniqueCode: { type: string }
-        schoolname: { type: string }
-
     Teacher_dto:
       type: object
       properties:
@@ -521,3 +476,16 @@ components:
         username: { type: string }
         subject: { type: string }
         schoolname: { type: string }
+
+    Login_dto:
+      type: object
+      properties:
+        username: { type: string }
+        password: { type: string }
+      required: [username, password]
+
+    login_REsp:
+      type: object
+      properties:
+        token: { type: string }
+        username: { type: string }

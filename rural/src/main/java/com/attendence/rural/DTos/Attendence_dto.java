@@ -8,7 +8,7 @@ import com.attendence.rural.Model.Status;
 
 public record Attendence_dto(
     String studentName,
-    int  rollNumber,   
+    int  rollno,   
     LocalDate date,
     Status status,     
     boolean syncStatus
