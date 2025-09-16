@@ -1,0 +1,491 @@
+openapi: 3.0.3
+info:
+  title: Automated Attendance System APIs
+  description: REST APIs for managing Schools, Students, Teachers, and Attendance in rural schools.
+  version: 1.0.1
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+tags:
+  - name: Attendance APIs
+    description: Manage student attendance
+  - name: Attendance Export APIs
+    description: Download attendance reports
+  - name: School APIs
+    description: Manage schools
+  - name: Student APIs
+    description: Manage students
+  - name: Teacher APIs
+    description: Manage teachers
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ---------------- Attendance APIs ----------------
+  /api/attendence/scan:
+    post:
+      tags: [Attendance APIs]
+      summary: Mark attendance by QR or RFID scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attendence_scanDto'
+      responses:
+        "200":
+          description: Attendance marked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_Resp'
+        "404":
+          description: Student not found
+        "400":
+          description: Either QR code or RFID must be provided
+
+  /api/attendence/finalize:
+    post:
+      tags: [Attendance APIs]
+      summary: Finalize attendance for a date
+      responses:
+        "200":
+          description: Finalized attendance list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendence/student/{uniqueCode}:
+    get:
+      tags: [Attendance APIs]
+      summary: Get student attendance records
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Attendance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendence/student/{uniqueCode}/summary:
+    get:
+      tags: [Attendance APIs]
+      summary: Get student attendance summary
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Attendance summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_summaryReasp'
+
+  /api/attendence/student/{uniqueCode}/summary/{year}/{month}:
+    get:
+      tags: [Attendance APIs]
+      summary: Get monthly summary
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: year
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: month
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Monthly summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_summaryReasp'
+
+  /api/attendence/sync:
+    post:
+      tags: [Attendance APIs]
+      summary: Sync offline attendance data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Attendence_offlineDto'
+      responses:
+        "200":
+          description: Synced attendance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendence/export/excel/{rollNo}:
+    get:
+      tags: [Attendance Export APIs]
+      summary: Download attendance in Excel
+      parameters:
+        - name: rollNo
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Excel file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /api/attendence/export/pdf/{rollNo}:
+    get:
+      tags: [Attendance Export APIs]
+      summary: Download attendance in PDF
+      parameters:
+        - name: rollNo
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  # ---------------- School APIs ----------------
+  /api/schools:
+    get:
+      tags: [School APIs]
+      summary: Get all schools
+      responses:
+        "200":
+          description: List of schools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/School_Resp'
+    post:
+      tags: [School APIs]
+      summary: Create a school
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School_dto'
+      responses:
+        "201":
+          description: School created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School_Resp'
+
+  /api/schools/{name}:
+    get:
+      tags: [School APIs]
+      summary: Get school by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: School details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School_Resp'
+    delete:
+      tags: [School APIs]
+      summary: Delete school
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204": { description: School deleted }
+
+  # ---------------- Student APIs ----------------
+  /api/students:
+    get:
+      tags: [Student APIs]
+      summary: Get all students
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentResp'
+    post:
+      tags: [Student APIs]
+      summary: Create a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student_dto'
+      responses:
+        "201":
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResp'
+
+  /api/students/{rollno}:
+    get:
+      tags: [Student APIs]
+      summary: Get student by roll number
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResp'
+    delete:
+      tags: [Student APIs]
+      summary: Delete student
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Student deleted }
+
+  # ---------------- Teacher APIs ----------------
+  /api/teachers/register:
+    post:
+      tags: [Teacher APIs]
+      summary: Register teacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Teacher_dto'
+      responses:
+        "201":
+          description: Teacher registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teache_Resp'
+
+  /api/teachers/login:
+    post:
+      security: []
+      tags: [Teacher APIs]
+      summary: Teacher login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login_dto'
+      responses:
+        "200":
+          description: JWT token response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/login_REsp'
+
+  /api/teachers:
+    get:
+      tags: [Teacher APIs]
+      summary: Get all teachers
+      responses:
+        "200":
+          description: List of teachers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Teache_Resp'
+
+  /api/teachers/{username}:
+    get:
+      tags: [Teacher APIs]
+      summary: Get teacher by username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Teacher details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teache_Resp'
+    delete:
+      tags: [Teacher APIs]
+      summary: Delete teacher
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204": { description: Teacher deleted }
+
+components:
+  schemas:
+    Attendence_scanDto:
+      type: object
+      properties:
+        uniquecode:
+          type: string
+          description: "Student unique code from QR scan"
+          example: "SCH-12A-XYZ"
+        rfidTagId:
+          type: string
+          description: "Student RFID tag ID"
+          example: "A1B2C3D4E5"
+      description: "Provide either uniquecode (QR) or rfidTagId (RFID) to mark attendance"
+
+    Attendence_Resp:
+      type: object
+      properties:
+        studentName: { type: string }
+        rollNumber: { type: integer }
+        className: { type: string }
+        schoolName: { type: string }
+        date: { type: string, format: date }
+        status: { type: string }
+        syncStatus: { type: boolean }
+
+    Attendence_summaryReasp:
+      type: object
+      properties:
+        studentName: { type: string }
+        rollNumber: { type: integer }
+        className: { type: string }
+        schoolName: { type: string }
+        totalDays: { type: integer }
+        presentDays: { type: integer }
+        percentage: { type: number, format: float }
+
+    Attendence_offlineDto:
+      type: object
+      properties:
+        uniquecode: { type: string }
+        date: { type: string, format: date }
+        status: { type: string }
+      required: [uniquecode, date, status]
+
+    Student_dto:
+      type: object
+      properties:
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        schoolname: { type: string }
+
+    StudentResp:
+      type: object
+      properties:
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        uniqueCode: { type: string }
+        schoolname: { type: string }
+
+    School_dto:
+      type: object
+      properties:
+        name: { type: string }
+        location: { type: string }
+      required: [name, location]
+
+    School_Resp:
+      type: object
+      properties:
+        name: { type: string }
+        location: { type: string }
+        totalStudents: { type: integer }
+        totalteachers: { type: integer }
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentResp'
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Teache_Resp'
+
+    Teacher_dto:
+      type: object
+      properties:
+        name: { type: string }
+        username: { type: string }
+        password: { type: string }
+        subject: { type: string }
+        schoolName: { type: string }
+      required: [name, username, password, subject, schoolName]
+
+    Teache_Resp:
+      type: object
+      properties:
+        name: { type: string }
+        username: { type: string }
+        subject: { type: string }
+        schoolname: { type: string }
+
+    Login_dto:
+      type: object
+      properties:
+        username: { type: string }
+        password: { type: string }
+      required: [username, password]
+
+    login_REsp:
+      type: object
+      properties:
+        token: { type: string }
+        username: { type: string }
