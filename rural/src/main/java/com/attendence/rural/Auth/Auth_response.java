@@ -1,8 +1,8 @@
-package com.attendence.rural.RespDtos;
+package com.attendence.rural.Auth;
 
 import java.util.List;
 
-public record login_REsp(
+public record Auth_response(
     String token,
     String username,
     List<String> roles

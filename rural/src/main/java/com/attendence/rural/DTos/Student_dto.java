@@ -21,7 +21,11 @@ import jakarta.validation.constraints.Positive;
         // String rfidTagId,
 
         @NotBlank
-        String schoolname
+        String schoolname,
+
+        @NotBlank String username,
+
+        @NotBlank String password
     ) {
         
     

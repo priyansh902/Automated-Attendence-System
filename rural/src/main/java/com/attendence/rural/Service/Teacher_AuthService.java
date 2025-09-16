@@ -1,22 +1,23 @@
 package com.attendence.rural.Service;
 
+import java.util.Set;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.attendence.rural.DTos.Login_dto;
 import com.attendence.rural.DTos.Teacher_dto;
 import com.attendence.rural.Excptions.Custom_ex;
 import com.attendence.rural.Excptions.SchoolNotFound;
-import com.attendence.rural.Excptions.TeacherNotFound;
 import com.attendence.rural.Jwt.Teacher_jwt;
 import com.attendence.rural.Mapper.Teacher_mapper;
+import com.attendence.rural.Model.Role;
 import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Teacher;
+import com.attendence.rural.Model.User;
 import com.attendence.rural.Repositor.School_Repo;
 import com.attendence.rural.Repositor.Teacher_Repo;
 import com.attendence.rural.RespDtos.Teache_Resp;
-import com.attendence.rural.RespDtos.login_REsp;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +31,7 @@ public class Teacher_AuthService {
     private final Teacher_mapper teacher_mapper;    
     private final PasswordEncoder passwordEncoder;
     private final Teacher_jwt teacher_jwt;
+
 
     public Teacher_AuthService(Teacher_Repo teacher_Repo,
                                School_Repo school_Repo,
@@ -63,6 +65,17 @@ public class Teacher_AuthService {
         Teacher teacher = teacher_mapper.toEntity(dto, school);
         teacher.setPassword(passwordEncoder.encode(dto.password())); // hash password
 
+         // Create User for login
+         User user = new User();
+         user.setUsername(normalizedUsername);
+         user.setPassword(teacher.getPassword()); // hashed password
+         Role teacherRole = new Role(); 
+         teacherRole.setName("ROLE_TEACHER");
+         user.setRoles(Set.of(teacherRole));
+
+        teacher.setUser(user);
+        user.setTeacher(teacher);
+
         Teacher saved = teacher_Repo.save(teacher);
 
         log.info("[AUTH][REGISTER] Registration successful → username={}, teacherId={}, school={}", 
@@ -72,26 +85,33 @@ public class Teacher_AuthService {
         return teacher_mapper.teache_Resp(saved);
     }
 
-    public login_REsp login(Login_dto dto){
-        String normalizedUsername = dto.username().toLowerCase();
-        log.info("[AUTH][LOGIN] Attempt login for username={}", normalizedUsername);
+//     public login_REsp login(Login_dto dto){
+//         String normalizedUsername = dto.username().toLowerCase();
+//         log.info("[AUTH][LOGIN] Attempt login for username={}", normalizedUsername);
 
-        Teacher teacher = teacher_Repo.findByUsername(normalizedUsername)
-            .orElseThrow(() -> {
-                log.warn("[AUTH][LOGIN] Invalid username: {}", normalizedUsername);
-                return new TeacherNotFound("Invalid Username/Password");
-            });
+//         Teacher teacher = teacher_Repo.findByUsername(normalizedUsername)
+//             .orElseThrow(() -> {
+//                 log.warn("[AUTH][LOGIN] Invalid username: {}", normalizedUsername);
+//                 return new TeacherNotFound("Invalid Username/Password");
+//             });
 
-        if(!passwordEncoder.matches(dto.password(), teacher.getPassword())) {
-            log.warn("[AUTH][LOGIN] Invalid password attempt for username={}", normalizedUsername);
-            throw new Custom_ex("Invalid Username/Password");
-        }
+//         if(!passwordEncoder.matches(dto.password(), teacher.getPassword())) {
+//             log.warn("[AUTH][LOGIN] Invalid password attempt for username={}", normalizedUsername);
+//             throw new Custom_ex("Invalid Username/Password");
+//         }
 
-        String token = teacher_jwt.generateToken(teacher.getUsername());
-        log.info("[AUTH][LOGIN] Login successful → username={}, teacherId={}", 
-                 teacher.getUsername(), teacher.getTeacherId());
-        log.debug("[AUTH][LOGIN] JWT token generated: {}", token); // optional, remove in prod
+//         User user = teacher.getUser();
+//         List<String> roles = user.getRoles().stream()
+//                                 .map(Role::getName)
+//                                 .toList();
 
-        return new login_REsp(token, teacher.getUsername());
-    }
+//         // Generate JWT token with roles
+//         String token = teacher_jwt.generateToken(teacher.getUsername(),roles);
+
+//         log.info("[AUTH][LOGIN] Login successful → username={}, teacherId={}", 
+//              teacher.getUsername(), teacher.getTeacherId());
+//      log.debug("[AUTH][LOGIN] JWT token generated: {}", token);
+
+//         return new login_REsp(token, teacher.getUsername(),roles);
+//     }
 }

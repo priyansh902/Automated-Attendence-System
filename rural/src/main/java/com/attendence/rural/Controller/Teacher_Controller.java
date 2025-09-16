@@ -46,11 +46,11 @@ public class Teacher_Controller {
         return ResponseEntity.status(HttpStatus.CREATED).body(teacher_AuthService.register(teacher_dto));
     }
 
-    @Operation(summary = "Teacher login", description = "Login and receive JWT token")
-     @PostMapping("/login")
-    public ResponseEntity<login_REsp> login(@Valid @RequestBody Login_dto dto) {
-        return ResponseEntity.ok(teacher_AuthService.login(dto));
-    }
+    // @Operation(summary = "Teacher login", description = "Login and receive JWT token")
+    //  @PostMapping("/login")
+    // public ResponseEntity<login_REsp> login(@Valid @RequestBody Login_dto dto) {
+    //     return ResponseEntity.ok(teacher_AuthService.login(dto));
+    // }
 
     @Operation(summary = "Get teacher by username", description = "Retrieve teacher details")
     @GetMapping("/{username}")

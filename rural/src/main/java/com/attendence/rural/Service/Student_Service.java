@@ -2,16 +2,22 @@ package com.attendence.rural.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.attendence.rural.DTos.Student_dto;
+import com.attendence.rural.Excptions.Custom_ex;
 import com.attendence.rural.Excptions.SchoolNotFound;
 import com.attendence.rural.Excptions.StudentNotFound;
 import com.attendence.rural.Mapper.Student_mapper;
+import com.attendence.rural.Model.Role;
 import com.attendence.rural.Model.School;
 import com.attendence.rural.Model.Student;
+import com.attendence.rural.Model.User;
+import com.attendence.rural.Repositor.Role_Repo;
 import com.attendence.rural.Repositor.School_Repo;
 import com.attendence.rural.Repositor.Student_Repo;
 import com.attendence.rural.RespDtos.StudentResp;
@@ -28,11 +34,15 @@ public class Student_Service implements Student_Service_interface {
     private final Student_Repo student_Repo;
     private final Student_mapper student_mapper;
     private final School_Repo school_Repo;
+    private final Role_Repo role_Repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public Student_Service(Student_Repo student_Repo, Student_mapper student_mapper, School_Repo school_Repo) {
+    public Student_Service(Student_Repo student_Repo, Student_mapper student_mapper, School_Repo school_Repo, Role_Repo role_Repo,PasswordEncoder passwordEncoder) {
         this.student_Repo = student_Repo;
         this.student_mapper = student_mapper;
         this.school_Repo = school_Repo;
+        this.role_Repo = role_Repo;
+        this.passwordEncoder = passwordEncoder;
     
     }
 
@@ -58,6 +68,18 @@ public class Student_Service implements Student_Service_interface {
 
          student = student_mapper.toEntity(request, school, uniquecode);
             } while (student_Repo.findByUniquecode(uniquecode).isPresent());
+
+             User user = new User();
+             user.setUsername(request.name().toLowerCase());  // from DTO
+             user.setPassword(passwordEncoder.encode(request.password())); // hash password
+
+             Role studentRole = role_Repo.findByName("ROLE_STUDENT")
+             .orElseThrow(() -> new Custom_ex("ROLE_STUDENT not found"));
+                 user.setRoles(Set.of(studentRole));
+
+                 // Link User <-> Student
+                 student.setUser(user);
+                 user.setStudent(student);
 
          Student saved = student_Repo.save(student);
 

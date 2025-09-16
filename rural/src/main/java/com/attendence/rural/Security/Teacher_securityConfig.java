@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,9 +26,17 @@ public class Teacher_securityConfig {
 
     private final Teacher_JwtFilter teacher_JwtFilter;
 
+    
+
     public Teacher_securityConfig (Teacher_JwtFilter teacher_JwtFilter){
         this.teacher_JwtFilter = teacher_JwtFilter;
     }
+
+    
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+             return config.getAuthenticationManager();
+        }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -39,14 +49,21 @@ public class Teacher_securityConfig {
             .csrf(AbstractHttpConfigurer::disable) //csrf not need for jwt
                 .cors(cors -> cors.configurationSource(configurationSource()))
                     .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/teachers/register", "/api/teachers/login"
-                            , "/swagger-ui/**",
+                        .requestMatchers("/api/teachers/register", "/api/teachers/login","/api/admin/register","/api/auth/login",
+                             "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                      "/swagger-resources/**",
                                          "/webjars/**",
                                               "/attendance-api.yaml"
                         ).permitAll()
-                            .anyRequest().authenticated()             )
+
+                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                 .requestMatchers("/api/teachers/**").hasAnyRole("ADMIN", "TEACHER")
+                                     .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "TEACHER")
+                                        .requestMatchers("/api/attendance/**").hasAnyRole("TEACHER", "STUDENT")
+                                             .requestMatchers("/api/schools/**").hasRole("ADMIN")
+                                         )
+
                                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                     .addFilterBefore(teacher_JwtFilter, UsernamePasswordAuthenticationFilter.class)
                                         .build();
@@ -56,7 +73,7 @@ public class Teacher_securityConfig {
     public CorsConfigurationSource configurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(List.of("*"));  //change later for react front end
-                 configuration.setAllowedMethods(List.of("Get","Post","Put","Delete"));
+                 configuration.setAllowedMethods(List.of("Get","Post","Put","Delete","OPTIONS"));
                      configuration.setAllowedHeaders(List.of("*")); // allow all headers
                          configuration.setExposedHeaders(List.of("Authorization")); // so frontend can read token
                              configuration.setAllowCredentials(true); // if you ever use cookies
