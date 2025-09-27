@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 import com.attendence.rural.Model.Status;
 
-public record Attendence_Resp(
+public record Attendance_Resp(
      String studentName,
     int rollNumber,
     String className,

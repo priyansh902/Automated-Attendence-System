@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,18 +19,23 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.attendence.rural.Jwt.Teacher_JwtFilter;
+import com.attendence.rural.Jwt.DeviceApiKeyFilter;
+import com.attendence.rural.Jwt.TeacherJwtFilter;
+
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class Teacher_securityConfig {
 
-    private final Teacher_JwtFilter teacher_JwtFilter;
+    private final TeacherJwtFilter teacher_JwtFilter;
+    private final DeviceApiKeyFilter deviceApiKeyFilter;
 
     
 
-    public Teacher_securityConfig (Teacher_JwtFilter teacher_JwtFilter){
+    public Teacher_securityConfig (TeacherJwtFilter teacher_JwtFilter,DeviceApiKeyFilter deviceApiKeyFilter){
         this.teacher_JwtFilter = teacher_JwtFilter;
+        this.deviceApiKeyFilter = deviceApiKeyFilter;
     }
 
     
@@ -62,17 +68,20 @@ public class Teacher_securityConfig {
                                      .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "TEACHER")
                                         .requestMatchers("/api/attendance/**").hasAnyRole("TEACHER", "STUDENT")
                                              .requestMatchers("/api/schools/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/attendance/rfid/**").hasRole("ADMIN")
                                          )
 
                                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                     .addFilterBefore(teacher_JwtFilter, UsernamePasswordAuthenticationFilter.class)
-                                        .build();
+                                        .addFilterBefore(deviceApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+                                         .build();
     }
 
     @Bean
     public CorsConfigurationSource configurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(List.of("*"));  //change later for react front end
+            configuration.setAllowedOrigins(List.of("*"));  //change later for react front end   "https://your-frontend-domain.com",
+           // "http://localhost:3000" // dev only
                  configuration.setAllowedMethods(List.of("Get","Post","Put","Delete","OPTIONS"));
                      configuration.setAllowedHeaders(List.of("*")); // allow all headers
                          configuration.setExposedHeaders(List.of("Authorization")); // so frontend can read token

@@ -1,6 +1,6 @@
 package com.attendence.rural.RespDtos;
 
-public record Attendence_summaryReasp(
+public record Attendance_summaryReasp(
     String studentName,
     int rollNumber,
     String className,

@@ -20,9 +20,7 @@ public class Teacher_mapper {
         teacher.setSubject(teacher_dto.subject());
         teacher.setSchool(school);
 
-        // var school = new School();
-        // school.setName(teacher_dto.schoolName());O
-        // teacher.setSchool(school);
+       
 
        return teacher;
     }

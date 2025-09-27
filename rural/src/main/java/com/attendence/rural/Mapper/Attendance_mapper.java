@@ -5,23 +5,23 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.attendence.rural.DTos.Attendence_dto;
-import com.attendence.rural.Model.Attendence;
+import com.attendence.rural.DTos.Attendance_dto;
+import com.attendence.rural.Model.Attendance;
 import com.attendence.rural.Model.Student;
 import com.attendence.rural.Repositor.Student_Repo;
-import com.attendence.rural.RespDtos.Attendence_Resp;
+import com.attendence.rural.RespDtos.Attendance_Resp;
 
 @Component
-public class Attendence_mapper {
+public class Attendance_mapper {
 
     private Student_Repo student_Repo;
 
-    public Attendence_mapper(Student_Repo student_Repo){
+    public Attendance_mapper(Student_Repo student_Repo){
         this.student_Repo = student_Repo;
     }
 
-    public Attendence toEntity(Attendence_dto attendence_dto){
-        var attendence = new Attendence();
+    public Attendance toEntity(Attendance_dto attendence_dto){
+        var attendence = new Attendance();
        
         Student student = student_Repo.
                             findByRollno(attendence_dto.rollno()).
@@ -35,11 +35,11 @@ public class Attendence_mapper {
         return attendence;
     }
 
-    public Attendence_Resp toResp(Attendence attendence){
+    public Attendance_Resp toResp(Attendance attendence){
        
          Student s = attendence.getStudent();
 
-        return new Attendence_Resp(s.getName(),
+        return new Attendance_Resp(s.getName(),
                                      s.getRollno(),
                                         s.getClassname(), 
                                              s.getSchool().getName(),
@@ -49,7 +49,7 @@ public class Attendence_mapper {
 
     }
 
-    public List<Attendence_Resp> toRespsList(List<Attendence> records){
+    public List<Attendance_Resp> toRespsList(List<Attendance> records){
         return records.stream()
             .map(this::toResp)
                 .collect(Collectors.toList());

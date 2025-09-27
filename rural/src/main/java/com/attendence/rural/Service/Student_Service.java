@@ -20,6 +20,7 @@ import com.attendence.rural.Model.User;
 import com.attendence.rural.Repositor.Role_Repo;
 import com.attendence.rural.Repositor.School_Repo;
 import com.attendence.rural.Repositor.Student_Repo;
+import com.attendence.rural.Repositor.User_Repo;
 import com.attendence.rural.RespDtos.StudentResp;
 import com.attendence.rural.Service_interface.Student_Service_interface;
 
@@ -36,58 +37,67 @@ public class Student_Service implements Student_Service_interface {
     private final School_Repo school_Repo;
     private final Role_Repo role_Repo;
     private final PasswordEncoder passwordEncoder;
+    private final User_Repo user_Repo;
 
-    public Student_Service(Student_Repo student_Repo, Student_mapper student_mapper, School_Repo school_Repo, Role_Repo role_Repo,PasswordEncoder passwordEncoder) {
+    public Student_Service(Student_Repo student_Repo, Student_mapper student_mapper, School_Repo school_Repo, Role_Repo role_Repo,PasswordEncoder passwordEncoder,User_Repo user_Repo) {
         this.student_Repo = student_Repo;
         this.student_mapper = student_mapper;
         this.school_Repo = school_Repo;
         this.role_Repo = role_Repo;
         this.passwordEncoder = passwordEncoder;
+        this.user_Repo = user_Repo;
     
     }
 
     @Override
-        public StudentResp createStudent(Student_dto request) {
-            log.info("Creating student with rollno={} in school={}", request.rollno(), request.schoolname());
+    public StudentResp createStudent(Student_dto request) {
+        log.info("Creating student with rollno={} in school={}", request.rollno(), request.schoolname());
 
-            School school = school_Repo.findByName(request.schoolname())
-             .orElseThrow(() -> {
-                log.error("School not found: {}", request.schoolname());
-                 return new SchoolNotFound("School not found: " + request.schoolname());
-             });
+        School school = school_Repo.findByName(request.schoolname())
+         .orElseThrow(() -> {
+            log.error("School not found: {}", request.schoolname());
+            return new SchoolNotFound("School not found: " + request.schoolname());
+         });
 
-         Student student;
-            String uniquecode;
-            do {
-         uniquecode = student_mapper.generateBaseCode(school, request.rollno());
-         log.debug("Generated unique code={} for rollno={}", uniquecode, request.rollno());
+        // Generate unique student code
+        Student student;
+        String uniquecode;
+        do {
+            uniquecode = student_mapper.generateBaseCode(school, request.rollno());
+            log.debug("Generated unique code={} for rollno={}", uniquecode, request.rollno());
 
-         if (student_Repo.findByUniquecode(uniquecode).isPresent()) {
-            log.warn("Duplicate unique code={} detected, regenerating...", uniquecode);
-         }
+            if (student_Repo.findByUniquecode(uniquecode).isPresent()) {
+                log.warn("Duplicate unique code={} detected, regenerating...", uniquecode);
+            }
 
          student = student_mapper.toEntity(request, school, uniquecode);
-            } while (student_Repo.findByUniquecode(uniquecode).isPresent());
+        } while (student_Repo.findByUniquecode(uniquecode).isPresent());
 
-             User user = new User();
-             user.setUsername(request.name().toLowerCase());  // from DTO
-             user.setPassword(passwordEncoder.encode(request.password())); // hash password
+        // Create User entity
+        User user = new User();
+     user.setUsername(request.name().toLowerCase());
+     user.setPassword(passwordEncoder.encode(request.password()));
 
-             Role studentRole = role_Repo.findByName("ROLE_STUDENT")
-             .orElseThrow(() -> new Custom_ex("ROLE_STUDENT not found"));
-                 user.setRoles(Set.of(studentRole));
+     Role studentRole = role_Repo.findByName("ROLE_STUDENT")
+         .orElseThrow(() -> new Custom_ex("ROLE_STUDENT not found"));
+        user.setRoles(Set.of(studentRole));
 
-                 // Link User <-> Student
-                 student.setUser(user);
-                 user.setStudent(student);
+        // ✅ Save user first
+        User savedUser = user_Repo.save(user);
 
+        // Link User <-> Student
+        student.setUser(savedUser);
+        savedUser.setStudent(student);
+
+        // Save student now
          Student saved = student_Repo.save(student);
 
-         log.info("Student saved successfully → dbId={}, rollNo={}, uniqueCode={}, rfid={}",
-             saved.getRollno(), saved.getUniquecode(), saved.getRfidTagId());
+      log.info("Student saved successfully → dbId={}, rollNo={}, uniqueCode={}, rfid={}",
+           saved.getRollno(), saved.getUniquecode(), saved.getRfidTagId());
 
-            return student_mapper.studentResp(saved);
+         return student_mapper.studentResp(saved);
     }
+
 
 
     @Override

@@ -5,7 +5,7 @@ import com.attendence.rural.Model.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record Attendence_bulkDto(
+public record Attendance_bulkDto(
      @NotBlank String uniquecode,
      @NotNull Status status
 ) {

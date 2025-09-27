@@ -1,6 +1,6 @@
 package com.attendence.rural.DTos;
 
-public record Attendence_scanDto(
+public record Attendance_scanDto(
     String uniquecode,
     String rfidTagId
     

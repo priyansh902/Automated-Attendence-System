@@ -42,8 +42,8 @@ public class Student {
     @JoinColumn(name= "school_id")
     private School school;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
+     private User user;
  
 }

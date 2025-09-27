@@ -1,8 +1,10 @@
 package com.attendence.rural.Excptions;
 
+import java.time.Instant;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,5 +42,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
             logger.error("Unexpected exception occurred", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Unexpected error", "details", ex.getMessage()));
+        }
+
+        @ExceptionHandler(AttendanceAlreadyExist.class)
+         public ResponseEntity<Map<String,Object>> handleAttendanceExists(AttendanceAlreadyExist ex) {
+            Map<String,Object> body = Map.of(
+            "timestamp", Instant.now().toString(),
+            "status", HttpStatus.CONFLICT.value(),
+            "error", "Conflict",
+            "message", ex.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        }
+
+         @ExceptionHandler(DataIntegrityViolationException.class)
+        public ResponseEntity<Map<String,Object>> handleSqlIntegrity(DataIntegrityViolationException ex) {
+         Map<String,Object> body = Map.of(
+            "timestamp", Instant.now().toString(),
+            "status", HttpStatus.CONFLICT.value(),
+            "error", "Conflict",
+            "message", "Database constraint violation"
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
         }
     }

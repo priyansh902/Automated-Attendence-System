@@ -6,7 +6,7 @@ import com.attendence.rural.Model.Status;
 
 import jakarta.validation.constraints.NotNull;
 
-public record Attendence_offlineDto(
+public record Attendance_offlineDto(
     // @NotBlank 
     String uniquecode,
     String rfidTagId,

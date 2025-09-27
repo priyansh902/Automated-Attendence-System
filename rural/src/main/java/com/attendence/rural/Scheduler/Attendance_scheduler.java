@@ -5,14 +5,14 @@ import java.time.LocalDate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.attendence.rural.Service.Attendence_Service;
+import com.attendence.rural.Service.Attendance_Service;
 
 @Component
-public class Attendence_scheduler {
+public class Attendance_scheduler {
 
-    private final Attendence_Service attendence_Service;
+    private final Attendance_Service attendence_Service;
 
-    public Attendence_scheduler(Attendence_Service attendence_Service){
+    public Attendance_scheduler(Attendance_Service attendence_Service){
         this.attendence_Service = attendence_Service;
     }
 

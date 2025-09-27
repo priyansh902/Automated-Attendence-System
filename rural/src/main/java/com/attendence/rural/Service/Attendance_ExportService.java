@@ -7,11 +7,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.attendence.rural.Excptions.StudentNotFound;
-import com.attendence.rural.Model.Attendence;
+import com.attendence.rural.Model.Attendance;
 import com.attendence.rural.Model.Student;
-import com.attendence.rural.Repositor.Attendence_Repo;
+import com.attendence.rural.Repositor.Attendance_Repo;
 import com.attendence.rural.Repositor.Student_Repo;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.FontFactory;
@@ -23,12 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class Attendence_ExportService {
+@Transactional
+public class Attendance_ExportService {
     
-    private final Attendence_Repo attendence_Repo;
+    private final Attendance_Repo attendence_Repo;
     private final Student_Repo student_Repo;
 
-    public Attendence_ExportService(Attendence_Repo attendence_Repo, Student_Repo student_Repo) {
+    public Attendance_ExportService(Attendance_Repo attendence_Repo, Student_Repo student_Repo) {
         this.attendence_Repo = attendence_Repo;
         this.student_Repo = student_Repo;
     }
@@ -42,7 +44,7 @@ public class Attendence_ExportService {
                     return new StudentNotFound("Student not found: " + rollNo);
                 });
 
-        java.util.List<Attendence> records = attendence_Repo.findByStudent(student);
+        java.util.List<Attendance> records = attendence_Repo.findByStudent(student);
         log.debug("Fetched {} attendance records for student: {}", records.size(), student.getName());
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -55,7 +57,7 @@ public class Attendence_ExportService {
             header.createCell(3).setCellValue("Synced");
 
             int rowIndex = 1;
-            for (Attendence a : records) {
+            for (Attendance a : records) {
                 Row r = sheet.createRow(rowIndex++);
                 r.createCell(0).setCellValue(a.getDate().toString());
                 r.createCell(1).setCellValue(a.getStatus().name());
@@ -81,7 +83,7 @@ public class Attendence_ExportService {
                     return new StudentNotFound("Student not found: " + rollNo);
                 });
 
-        java.util.List<Attendence> records = attendence_Repo.findByStudent(student);
+        java.util.List<Attendance> records = attendence_Repo.findByStudent(student);
         log.debug("Fetched {} attendance records for student: {}", records.size(), student.getName());
 
         Document document = new Document();
@@ -105,7 +107,7 @@ public class Attendence_ExportService {
             table.addCell("Status");
             table.addCell("Synced");
 
-            for (Attendence a : records) {
+            for (Attendance a : records) {
                 table.addCell(a.getDate().toString());
                 table.addCell(student.getRfidTagId() != null ? student.getRfidTagId() : "N/A");
                 table.addCell(a.getStatus().name());

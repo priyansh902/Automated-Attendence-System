@@ -6,7 +6,7 @@ import com.attendence.rural.Model.Status;
 
 
 
-public record Attendence_dto(
+public record Attendance_dto(
     String studentName,
     int  rollno,   
     LocalDate date,

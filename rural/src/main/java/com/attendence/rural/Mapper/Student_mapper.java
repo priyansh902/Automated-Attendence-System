@@ -28,21 +28,6 @@ public class Student_mapper {
         student.setClassname(student_dto.classname());
 
          student.setRfidTagId(generateRandomRFID());
-        
-
-        //   if (student_dto.rfidTagId() == null || student_dto.rfidTagId().isBlank()) {
-        //     student.setRfidTagId(generateRandomRFID());
-        //     } else {
-        //     student.setRfidTagId(student_dto.rfidTagId());
-        //     }
-
-        // student.setUniquecode(student_dto.uniquecode());
-
-        // student.getUniquecode();
-
-        // var school = new School();
-        // school.setName(student_dto.schoolname());
-        // student.setSchool(school);
 
         return student;
     }
@@ -58,11 +43,6 @@ public class Student_mapper {
                           student.setRfidTagId(generateRandomRFID());
 
 
-                        //  if (dto.rfidTagId() == null || dto.rfidTagId().isBlank()) {
-                        //  student.setRfidTagId(generateRandomRFID());
-                        //     } else {
-                        // student.setRfidTagId(dto.rfidTagId());
-                        //   }
          return student;
     }
 
@@ -84,18 +64,7 @@ public class Student_mapper {
     }
 
     
-    // public List<Student> toEntryList(List<Student_dto> student_dtos){
-    //     return student_dtos.stream()
-    //      .map(dto -> {
-    //         Student student = toEntity(dto); 
-            
-    //         if (student.getRfidTagId() == null || student.getRfidTagId().isBlank()) {
-    //             student.setRfidTagId(generateRandomRFID());
-    //         }
-    //         return student;
-    //     })
-    //     .collect(Collectors.toList());
-    // }
+   
 
      public String generateRandomRFID() {
         String rfid;
