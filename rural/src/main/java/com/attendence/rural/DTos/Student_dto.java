@@ -1,17 +1,18 @@
 package com.attendence.rural.DTos;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
     public record Student_dto(
 
-        @NotBlank
+        @NotBlank(message = "name is required")
         String name,
         
         @Positive
         int rollno,
 
-        @NotBlank
+        @NotBlank(message = "classs name is required")
         String classname,
 
         // @NotBlank
@@ -23,9 +24,11 @@ import jakarta.validation.constraints.Positive;
         @NotBlank
         String schoolname,
 
-        @NotBlank String username,
+        @NotBlank(message = "username is required & must be unique")
+        @Column(unique = true) String username,
 
-        @NotBlank String password
+        @NotBlank(message = "passsword is required ")
+         String password
     ) {
         
     

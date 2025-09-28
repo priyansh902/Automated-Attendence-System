@@ -10,20 +10,26 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.attendence.rural.DTos.ForgetPasswordRequest;
+import com.attendence.rural.DTos.ResetPasswordRequest;
 import com.attendence.rural.DTos.School_dto;
 import com.attendence.rural.DTos.Student_dto;
 import com.attendence.rural.DTos.Teacher_dto;
 import com.attendence.rural.Jwt.Teacher_jwt;
 import com.attendence.rural.Model.Role;
 import com.attendence.rural.Model.User;
+import com.attendence.rural.RespDtos.PasswordResetResponse;
 import com.attendence.rural.RespDtos.School_Resp;
 import com.attendence.rural.RespDtos.StudentResp;
 import com.attendence.rural.RespDtos.Teache_Resp;
+import com.attendence.rural.Service.PasswordReset_service;
 import com.attendence.rural.Service.School_Service;
 import com.attendence.rural.Service.Student_Service;
 import com.attendence.rural.Service.Teacher_AuthService;
@@ -41,13 +47,15 @@ public class Auth_controller {
          private final Student_Service student_Service;
          private final Teacher_AuthService teacher_AuthService;
          private final School_Service school_Service;
+         private final PasswordReset_service passwordReset_service;
 
-    public Auth_controller(AuthenticationManager authenticationManager, Teacher_jwt teacher_jwt,Student_Service student_Service,Teacher_AuthService teacher_AuthService,School_Service school_Service) {
+    public Auth_controller(AuthenticationManager authenticationManager, Teacher_jwt teacher_jwt,Student_Service student_Service,Teacher_AuthService teacher_AuthService,School_Service school_Service,PasswordReset_service passwordReset_service) {
         this.authenticationManager = authenticationManager;
         this.teacher_jwt = teacher_jwt;
         this.student_Service = student_Service;
         this.teacher_AuthService = teacher_AuthService;
         this.school_Service = school_Service;
+        this.passwordReset_service = passwordReset_service;
     }
 
     @PostMapping("/login")
@@ -111,6 +119,53 @@ public class Auth_controller {
     ) {
         School_Resp school_Resp = school_Service.createSchool(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(school_Resp);
+    }
+
+
+  // Request password reset for teachers/admins  
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Request password reset", description = "Initiate password reset for teachers/admins using username")
+    public ResponseEntity<PasswordResetResponse> forgotPassword(
+            @Valid @RequestBody ForgetPasswordRequest request) {
+        
+        PasswordResetResponse response = passwordReset_service.initiatePasswordReset(request.username());
+        return ResponseEntity.ok(response);
+    }
+
+    // Reset password using token
+     @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Reset password using the provided token")
+    public ResponseEntity<PasswordResetResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        
+        try {
+            PasswordResetResponse response = passwordReset_service.resetPassword(
+                request.token(), request.newPassword());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new PasswordResetResponse(
+                e.getMessage(), false, null
+            ));
+        }
+    }
+
+    // Admin endpoint to reset user password
+     @PostMapping("/admin/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Admin password reset", description = "Admin can reset any user's password")
+    public ResponseEntity<PasswordResetResponse> adminResetPassword(
+            @AuthenticationPrincipal User adminUser,
+            @RequestParam String username) {
+        
+        try {
+            PasswordResetResponse response = passwordReset_service.adminResetUserPassword(
+                adminUser.getUsername(), username);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new PasswordResetResponse(
+                e.getMessage(), false, null
+            ));
+        }
     }
 
     

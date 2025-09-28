@@ -69,6 +69,7 @@ public class Teacher_securityConfig {
                                         .requestMatchers("/api/attendance/**").hasAnyRole("TEACHER", "STUDENT")
                                              .requestMatchers("/api/schools/**").hasRole("ADMIN")
                                                 .requestMatchers("/api/attendance/rfid/**").hasRole("ADMIN")
+                                                    .requestMatchers("/api/auth/**").hasRole("ADMIN")
                                          )
 
                                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
