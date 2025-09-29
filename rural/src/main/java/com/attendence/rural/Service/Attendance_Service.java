@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.attendence.rural.DTos.Attendance_offlineDto;
 import com.attendence.rural.DTos.Attendance_scanDto;
 import com.attendence.rural.Excptions.Custom_ex;
+import com.attendence.rural.Excptions.HolidayException;
 import com.attendence.rural.Excptions.StudentNotFound;
 import com.attendence.rural.Mapper.Attendance_mapper;
 import com.attendence.rural.Model.Attendance;
@@ -33,19 +34,29 @@ public class Attendance_Service implements Attendance_interface {
     private final Attendance_mapper attendence_mapper;
     private final Student_Repo student_Repo;
     private final Attendance_Repo attendence_Repo;
+    private final Holiday_service holiday_service;
 
     public Attendance_Service(Attendance_mapper attendence_mapper,
                               Student_Repo student_Repo,
-                              Attendance_Repo attendence_Repo) {
+                              Attendance_Repo attendence_Repo,
+                              Holiday_service holiday_service) {
         this.attendence_Repo = attendence_Repo;
         this.attendence_mapper = attendence_mapper;
         this.student_Repo = student_Repo;
+        this.holiday_service = holiday_service;
     }
 
      @Override
     @Transactional
     public Attendance_Resp markByScan(Attendance_scanDto dto) {
      log.info("Marking attendance via scan. Input DTO: {}", dto);
+
+     //  HOLIDAY CHECK - REJECT ATTENDANCE ON HOLIDAYS
+      LocalDate today = LocalDate.now();
+        if (holiday_service.isHoliday(today)) {
+            log.warn("Attendance attempt rejected - Today is holiday: {}", today);
+            throw new HolidayException("Cannot mark attendance on holiday: " + today);
+        }
 
      Student student;
      if (dto.uniquecode() != null && !dto.uniquecode().isBlank()) {
@@ -67,7 +78,7 @@ public class Attendance_Service implements Attendance_interface {
         throw new IllegalArgumentException("Either uniquecode or rfidTagId must be provided.");
      }
 
-     LocalDate today = LocalDate.now();
+    //  LocalDate today = LocalDate.now();
 
      try {
         Attendance attendence = new Attendance();
@@ -93,6 +104,12 @@ public class Attendance_Service implements Attendance_interface {
     @Override
     public List<Attendance_Resp> finalizAttendenceForDate(LocalDate date) {
         log.info("Finalizing attendance for date: {}", date);
+
+          // HOLIDAY CHECK - SKIP FINALIZATION ON HOLIDAYS
+        if (holiday_service.isHoliday(date)) {
+            log.info("Skipping attendance finalization - Date is holiday: {}", date);
+            return List.of(); // No absents marked on holidays
+        }
 
         List<Student> allsStudents = student_Repo.findAll();
         List<Attendance_Resp> absents = new ArrayList<>();
@@ -255,13 +272,20 @@ public class Attendance_Service implements Attendance_interface {
     public Attendance_Resp markByRfid(String rfidTagId) {
          log.info("RFID scan received: {}", rfidTagId);
 
+          // HOLIDAY CHECK - REJECT RFID SCANS ON HOLIDAYS
+        LocalDate today = LocalDate.now();
+        if (holiday_service.isHoliday(today)) {
+            log.warn("RFID scan rejected - Today is holiday: {}", today);
+            throw new HolidayException("Cannot mark attendance on holiday: " + today);
+        }
+
             Student student = student_Repo.findByRfidTagId(rfidTagId)
              .orElseThrow(() -> {
                 log.warn("No student found for RFID: {}", rfidTagId);
                 return new StudentNotFound("No student found for RFID: " + rfidTagId);
              });
 
-        LocalDate today = LocalDate.now();
+        
 
      try {
         Attendance attendence = new Attendance();

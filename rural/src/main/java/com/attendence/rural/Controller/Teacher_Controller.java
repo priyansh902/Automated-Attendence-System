@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.attendence.rural.RespDtos.Teache_Resp;
-import com.attendence.rural.Service.Teacher_AuthService;
 import com.attendence.rural.Service.Teacher_Service;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,10 +23,10 @@ public class Teacher_Controller {
 
     private final Teacher_Service teacher_Service;
 
-    private final Teacher_AuthService teacher_AuthService;
+    
 
-    public Teacher_Controller(Teacher_Service teacher_Service, Teacher_AuthService teacher_AuthService){
-        this.teacher_AuthService = teacher_AuthService;
+    public Teacher_Controller(Teacher_Service teacher_Service){
+        
         this.teacher_Service = teacher_Service;
     }
 

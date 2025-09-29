@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.attendence.rural.DTos.Teacher_dto;
 import com.attendence.rural.Excptions.Custom_ex;
 import com.attendence.rural.Excptions.SchoolNotFound;
-import com.attendence.rural.Jwt.Teacher_jwt;
 import com.attendence.rural.Mapper.Teacher_mapper;
 import com.attendence.rural.Model.Role;
 import com.attendence.rural.Model.School;
@@ -32,7 +31,7 @@ public class Teacher_AuthService {
     private final School_Repo school_Repo;
     private final Teacher_mapper teacher_mapper;    
     private final PasswordEncoder passwordEncoder;
-    private final Teacher_jwt teacher_jwt;
+    
     private final Role_Repo role_Repo;
     private final User_Repo user_Repo;
 
@@ -41,11 +40,11 @@ public class Teacher_AuthService {
                                School_Repo school_Repo,
                                Teacher_mapper teacher_mapper,
                                PasswordEncoder passwordEncoder,
-                               Teacher_jwt teacher_jwt,
+                               
                                Role_Repo role_Repo,
                                User_Repo user_Repo) {
         this.teacher_Repo = teacher_Repo;
-        this.teacher_jwt = teacher_jwt;
+      
         this.teacher_mapper = teacher_mapper;
         this.school_Repo = school_Repo;
         this.passwordEncoder = passwordEncoder;

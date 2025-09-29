@@ -9,7 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.attendence.rural.Excptions.Invalid;
 import com.attendence.rural.Excptions.PasswordNotFound;
+import com.attendence.rural.Excptions.UserException;
 import com.attendence.rural.Model.PaawordReset;
 import com.attendence.rural.Model.User;
 import com.attendence.rural.Repositor.PasswordReset_Repo;
@@ -98,19 +100,19 @@ public class PasswordReset_service implements PasswordReset_interface {
         PaawordReset resetToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> {
                     log.warn("Invalid password reset token used: {}", token);
-                    return new RuntimeException("Invalid or expired reset token");
+                    return new Invalid("Invalid or expired reset token");
                 });
         
         // Validate token
         if (resetToken.isExpired()) {
             tokenRepository.delete(resetToken);
             log.warn("Expired password reset token used: {}", token);
-            throw new RuntimeException("Reset token has expired. Please request a new one.");
+            throw new Invalid("Reset token has expired. Please request a new one.");
         }
         
         if (resetToken.isUsed()) {
             log.warn("Already used password reset token: {}", token);
-            throw new RuntimeException("Reset token has already been used. Please request a new one.");
+            throw new Invalid("Reset token has already been used. Please request a new one.");
         }
         
         // Update user password
@@ -141,7 +143,7 @@ public class PasswordReset_service implements PasswordReset_interface {
         
         // Find target user
         User targetUser = userRepository.findByUsername(targetUsername.toLowerCase())
-                .orElseThrow(() -> new RuntimeException("User not found: " + targetUsername));
+                .orElseThrow(() -> new UserException("User not found: " + targetUsername));
         
         // Generate temporary password
         String tempPassword = generateTemporaryPassword();
