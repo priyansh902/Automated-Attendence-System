@@ -1,0 +1,637 @@
+openapi: 3.0.3
+info:
+  title: Automated Attendance System APIs
+  description: REST APIs for managing Schools, Students, Teachers, and Attendance in rural schools.
+  version: 1.0.1
+
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+tags:
+  - name: Auth
+    description: Login, student, teacher, and school creation
+  - name: Student APIs
+    description: Operations related to students
+  - name: Teacher APIs
+    description: Operations related to teachers
+  - name: School APIs
+    description: Operations related to schools
+  - name: Attendance APIs
+    description: Mark and manage attendance
+  - name: Attendance Export APIs
+    description: Download attendance reports in Excel/PDF
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  # ---------------- Auth ----------------
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login for all users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Auth_request'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth_response'
+        '401':
+          description: Invalid username or password
+
+  /api/auth/student:
+    post:
+      tags: [Auth]
+      summary: Create student (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student_dto'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResp'
+
+  /api/auth/teacher:
+    post:
+      tags: [Auth]
+      summary: Register teacher (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Teacher_dto'
+      responses:
+        '201':
+          description: Teacher registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teache_Resp'
+
+  /api/auth/school:
+    post:
+      tags: [Auth]
+      summary: Create school (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School_dto'
+      responses:
+        '201':
+          description: School created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School_Resp'
+
+  # ---------------- Student APIs ----------------
+  /api/students:
+    get:
+      tags: [Student APIs]
+      summary: Get all students
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentResp'
+    post:
+      tags: [Student APIs]
+      summary: Create student (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student_dto'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResp'
+
+  /api/students/{rollno}:
+    get:
+      tags: [Student APIs]
+      summary: Get student by roll number
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResp'
+    delete:
+      tags: [Student APIs]
+      summary: Delete student by roll number (Admin or Teacher)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Student deleted
+
+  # ---------------- Teacher APIs ----------------
+  /api/teachers:
+    get:
+      tags: [Teacher APIs]
+      summary: Get all teachers (Admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of teachers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Teache_Resp'
+
+  /api/teachers/{username}:
+    get:
+      tags: [Teacher APIs]
+      summary: Get teacher details by username (Teacher only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Teacher details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teache_Resp'
+    delete:
+      tags: [Teacher APIs]
+      summary: Delete teacher by username (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Teacher deleted
+
+  # ---------------- School APIs ----------------
+  /api/schools:
+    get:
+      tags: [School APIs]
+      summary: Get all schools (Admin or Teacher)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of schools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/School_Resp'
+    post:
+      tags: [School APIs]
+      summary: Create school (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School_dto'
+      responses:
+        '201':
+          description: School created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School_Resp'
+
+  /api/schools/{name}:
+    get:
+      tags: [School APIs]
+      summary: Get school by name (Admin or Teacher)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: School details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School_Resp'
+    delete:
+      tags: [School APIs]
+      summary: Delete school by name (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: School deleted
+
+  # ---------------- Attendance APIs ----------------
+  /api/attendance/scan:
+    post:
+      tags: [Attendance APIs]
+      summary: Mark attendance by QR or RFID
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attendence_scanDto'
+      responses:
+        '200':
+          description: Attendance marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendance/finalize:
+    post:
+      tags: [Attendance APIs]
+      summary: Finalize today's attendance
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Finalized attendance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendance/rfid:
+    post:
+      tags: [Attendance APIs]
+      summary: Mark attendance via RFID device
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attendence_rfidDto'
+      responses:
+        '200':
+          description: Attendance marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendance/student/{uniqueCode}:
+    get:
+      tags: [Attendance APIs]
+      summary: Get student attendance records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Attendance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  /api/attendance/student/{uniqueCode}/summary:
+    get:
+      tags: [Attendance APIs]
+      summary: Get student attendance summary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Attendance summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_summaryReasp'
+
+  /api/attendance/student/{uniqueCode}/summary/{year}/{month}:
+    get:
+      tags: [Attendance APIs]
+      summary: Get student monthly summary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uniqueCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Monthly summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendence_summaryReasp'
+
+  /api/attendance/sync:
+    post:
+      tags: [Attendance APIs]
+      summary: Sync offline attendance records
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Attendence_offlineDto'
+      responses:
+        '200':
+          description: Offline attendance synced
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendence_Resp'
+
+  # ---------------- Attendance Export APIs ----------------
+  /api/attendance/export/excel/{rollno}:
+    get:
+      tags: [Attendance Export APIs]
+      summary: Download Excel attendance report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Excel file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+
+  /api/attendance/export/pdf/{rollno}:
+    get:
+      tags: [Attendance Export APIs]
+      summary: Download PDF attendance report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: rollno
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ---------------- Auth ----------------
+    Auth_request:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    Auth_response:
+      type: object
+      properties:
+        token:
+          type: string
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+
+    # ---------------- Student ----------------
+    Student_dto:
+      type: object
+      properties:
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        schoolname: { type: string }
+
+    StudentResp:
+      type: object
+      properties:
+        name: { type: string }
+        rollno: { type: integer }
+        classname: { type: string }
+        uniqueCode: { type: string }
+        schoolname: { type: string }
+
+    # ---------------- Teacher ----------------
+    Teacher_dto:
+      type: object
+      properties:
+        name: { type: string }
+        username: { type: string }
+        password: { type: string }
+        subject: { type: string }
+        schoolName: { type: string }
+      required: [name, username, password, subject, schoolName]
+
+    Teache_Resp:
+      type: object
+      properties:
+        name: { type: string }
+        username: { type: string }
+        subject: { type: string }
+        schoolname: { type: string }
+
+    # ---------------- School ----------------
+    School_dto:
+      type: object
+      properties:
+        name: { type: string }
+        location: { type: string }
+      required: [name, location]
+
+    School_Resp:
+      type: object
+      properties:
+        name: { type: string }
+        location: { type: string }
+        totalStudents: { type: integer }
+        totalteachers: { type: integer }
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentResp'
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Teache_Resp'
+
+    # ---------------- Attendance ----------------
+    Attendance_scanDto:
+      type: object
+      properties:
+        uniquecode: { type: string }
+        rfidTagId: { type: string }
+
+    Attendance_rfidDto:
+      type: object
+      properties:
+        rfidTagId: { type: string }
+
+    Attendance_Resp:
+      type: object
+      properties:
+        studentName: { type: string }
+        rollNumber: { type: integer }
+        className: { type: string }
+        schoolName: { type: string }
+        date: { type: string, format: date }
+        status: { type: string }
+
+    Attendance_summaryReasp:
+      type: object
+      properties:
+        totalDays: { type: integer }
+        presentDays: { type: integer }
+        absentDays: { type: integer }
+
+    Attendance_bulkDto:
+      type: object
+      properties:
+        rollno: { type: integer }
+        status: { type: string }
+
+    Attendance_bulkAtDto:
+      type: object
+      properties:
+        schoolName: { type: string }
+        date: { type: string, format: date }
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attendence_bulkDto'
+
+    Attendance_offlineDto:
+      type: object
+      properties:
+        rollno: { type: integer }
+        date: { type: string, format: date }
+        status: { type: string }
